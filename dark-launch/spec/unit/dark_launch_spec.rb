@@ -1,6 +1,7 @@
+$:.unshift(File.expand_path('../../../lib', __FILE__))
 require 'chef/config'
 require 'tempfile'
-require File.expand_path(File.join(File.dirname(__FILE__), "..", "..", "lib", "opscode", "dark_launch"))
+require 'opscode/dark_launch'
 
 describe Opscode::DarkLaunch do
   before(:each) do

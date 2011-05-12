@@ -32,6 +32,16 @@ module Opscode
       @updated_at = Time.now
     end
 
+    def ==(rhs)
+      rhs.kind_of?(self.class) &&
+        job_id == rhs.job_id &&
+        tasks == rhs.tasks &&
+        created_at == rhs.created_at &&
+        updated_at == rhs.updated_at &&
+        username == rhs.username &&
+        orgname == rhs.orgname
+    end
+
     def self.json_create(hash)
       # convert array of hashes to array of Task's if needed.
       if hash['tasks'] && hash['tasks'].kind_of?(Array)

@@ -12,6 +12,13 @@ module Opscode
       raise ArgumentError, "Task: type must be set" unless @type
     end
 
+    def ==(rhs)
+      rhs.kind_of?(self.class) &&
+        task_id == rhs.task_id &&
+        type == rhs.type &&
+        data == rhs.data
+    end
+
     def self.json_create(hash)
       Task.new(:task_id => hash['task_id'],
                :type => hash['type'],
