@@ -17,6 +17,7 @@ describe Opscode::Job do
                    :updated_at => @time_now,
                    :username => "test_username",
                    :orgname => "test_orgname",
+                   :orgdb => "chef_c587999b1cd444679b7ab2d6715488f5",
                    :cloud_credentials => @cloud_credentials })
     @job = Opscode::Job.new(@job_args)
 
@@ -29,6 +30,7 @@ describe Opscode::Job do
       "updated_at" => @time_now.to_i,
       "username" => "test_username",
       "orgname" => "test_orgname",
+      "orgdb" => "chef_c587999b1cd444679b7ab2d6715488f5",
       "cloud_credentials" => @cloud_credentials.clone
     }
   end
@@ -40,11 +42,13 @@ describe Opscode::Job do
       @job.updated_at.should == @time_now
       @job.username.should == "test_username"
       @job.orgname.should == "test_orgname"
-
       @job.tasks.length.should == 1
       @job.tasks[0].task_id.should == "task-123"
 
       @job.cloud_credentials.class.should == Hash
+      @job.orgdb.should == "chef_c587999b1cd444679b7ab2d6715488f5"
+      @job.orgdb = "newdb"
+      @job.orgdb.should == "newdb"
     end
   end
 

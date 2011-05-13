@@ -13,6 +13,8 @@ module Opscode
 
     attr_reader :username
     attr_reader :orgname
+    # orgdb has to get set from service side after creation
+    attr_accessor :orgdb
 
     def initialize(hash)
       @job_id = hash[:job_id] || ("job-" + UUIDTools::UUID.random_create.to_s)
@@ -22,6 +24,7 @@ module Opscode
       @updated_at = hash[:updated_at] || Time.now
       @username = hash[:username]
       @orgname = hash[:orgname]
+      @orgdb = hash[:orgdb]
 
       # TODO tim 2011-5-11: duck-typing for these checks?
       raise ArgumentError, "Job: tasks must be an Array: #{@tasks.class}" unless @tasks.kind_of?(Array)
@@ -42,7 +45,8 @@ module Opscode
         created_at == rhs.created_at &&
         updated_at == rhs.updated_at &&
         username == rhs.username &&
-        orgname == rhs.orgname
+        orgname == rhs.orgname &&
+        orgdb == rhs.orgdb
     end
 
     def self.json_create(hash)
@@ -72,7 +76,8 @@ module Opscode
               :created_at => created_at ? Time.at(created_at) : Time.now,
               :updated_at => updated_at ? Time.at(updated_at) : Time.now,
               :username => hash['username'],
-              :orgname => hash['orgname'])
+              :orgname => hash['orgname'],
+              :orgdb => hash['orgdb'])
     end
 
     def to_json(*args)
@@ -87,7 +92,8 @@ module Opscode
         "created_at" => created_at.to_i,
         "updated_at" => updated_at.to_i,
         "username" => username,
-        "orgname" => orgname
+        "orgname" => orgname,
+        "orgdb" => orgdb
       }
     end
   end
