@@ -1,12 +1,13 @@
 # TODO tim 2011-5-11: "id" instead of job_id/task_id?
-# TODO tim 2011-5-12: add #== to Job and Task
 
 require 'opscode/task'
+require 'uuidtools'
 
 module Opscode
   class Job
     attr_reader :job_id
     attr_reader :tasks
+    attr_reader :cloud_credentials
     attr_reader :created_at  # Time
     attr_reader :updated_at  # Time
 
@@ -16,6 +17,7 @@ module Opscode
     def initialize(hash)
       @job_id = hash[:job_id] || ("job-" + UUIDTools::UUID.random_create.to_s)
       @tasks = hash[:tasks] || Array.new
+      @cloud_credentials = hash[:cloud_credentials]
       @created_at = hash[:created_at] || Time.now
       @updated_at = hash[:updated_at] || Time.now
       @username = hash[:username]
@@ -36,6 +38,7 @@ module Opscode
       rhs.kind_of?(self.class) &&
         job_id == rhs.job_id &&
         tasks == rhs.tasks &&
+        cloud_credentials == rhs.cloud_credentials &&
         created_at == rhs.created_at &&
         updated_at == rhs.updated_at &&
         username == rhs.username &&
@@ -43,6 +46,10 @@ module Opscode
     end
 
     def self.json_create(hash)
+      from_hash(hash)
+    end
+
+    def self.from_hash(hash)
       # convert array of hashes to array of Task's if needed.
       if hash['tasks'] && hash['tasks'].kind_of?(Array)
         tasks = Array.new
@@ -61,6 +68,7 @@ module Opscode
       updated_at = hash['updated_at']
       Job.new(:job_id => hash['_id'],
               :tasks => tasks,
+              :cloud_credentials => hash['cloud_credentials'],
               :created_at => created_at ? Time.at(created_at) : Time.now,
               :updated_at => updated_at ? Time.at(updated_at) : Time.now,
               :username => hash['username'],
@@ -75,11 +83,11 @@ module Opscode
       {
         "_id" => job_id,
         "tasks" => tasks,
+        "cloud_credentials" => cloud_credentials,
         "created_at" => created_at.to_i,
         "updated_at" => updated_at.to_i,
         "username" => username,
-        "orgname" => orgname,
-        #"json_class" => self.class.name TODO tim 2011-5-11
+        "orgname" => orgname
       }
     end
   end

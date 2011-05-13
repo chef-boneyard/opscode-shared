@@ -6,14 +6,18 @@ describe Opscode::Job do
     # Time.at/to_i to round down to closest second.
     @time_now = Time.at(Time.now.to_i)
     @task_args = ({ :task_id => "task-123",
-                    :data => "some_data",
+                    :data => "test_data",
                     :type => "test_type" })
+    @cloud_credentials = ({ :provider => 'AWS',
+                            :aws_access_key_id => 'test_aws_access_key',
+                            :aws_secret_access_key => 'test_secret_access_key', })
     @job_args = ({ :job_id => "job-test123",
                    :tasks => [Opscode::Task.new(@task_args)],
                    :created_at => @time_now,
                    :updated_at => @time_now,
                    :username => "test_username",
-                   :orgname => "test_orgname" })
+                   :orgname => "test_orgname",
+                   :cloud_credentials => @cloud_credentials })
     @job = Opscode::Job.new(@job_args)
 
     @job_hash = {
@@ -24,7 +28,8 @@ describe Opscode::Job do
       "created_at" => @time_now.to_i,
       "updated_at" => @time_now.to_i,
       "username" => "test_username",
-      "orgname" => "test_orgname"
+      "orgname" => "test_orgname",
+      "cloud_credentials" => @cloud_credentials.clone
     }
   end
 
@@ -38,6 +43,8 @@ describe Opscode::Job do
 
       @job.tasks.length.should == 1
       @job.tasks[0].task_id.should == "task-123"
+
+      @job.cloud_credentials.class.should == Hash
     end
   end
 
@@ -87,6 +94,19 @@ describe Opscode::Job do
       job2 = Opscode::Job.new(@job_args.merge(:tasks => [task]))
       @job.should_not == job2
     end
+
+    it "should return not equal for different Jobs: cloud_credentials type" do
+      job2 = Opscode::Job.new(@job_args.merge(:cloud_credentials => "credentials"))
+      @job.should_not == job2
+    end
+
+
+    it "should return not equal for different Jobs: cloud_credentials content" do
+      cloud_credentials = @cloud_credentials.clone
+      cloud_credentials["extrakey"] = "extravalue"
+      job2 = Opscode::Job.new(@job_args.merge(:cloud_credentials => cloud_credentials))
+      @job.should_not == job2
+    end
   end
 
   describe "initialize" do
@@ -117,15 +137,22 @@ describe Opscode::Job do
 
   describe "serialization" do
     it "should serialize to and back from a hash and be equal" do
-      fromhash_job = Opscode::Job.json_create(@job.to_hash)
+      fromhash_job = Opscode::Job.from_hash(@job.to_hash)
       fromhash_job.job_id.should == @job.job_id
       fromhash_job.created_at.should == @job.created_at
       fromhash_job.updated_at.should == @job.updated_at
       fromhash_job.username.should == @job.username
       fromhash_job.orgname.should == @job.orgname
       fromhash_job.tasks.should == @job.tasks
+      fromhash_job.cloud_credentials.should == @job.cloud_credentials
 
       fromhash_job.should == @job
+    end
+
+    it "should serialize if cloud credentials is nil" do
+      job_no_cloud = Opscode::Job.new({})
+      job_no_cloud.cloud_credentials.should == nil
+      job_no_cloud.to_hash # should not_throw_exception
     end
   end
 end
