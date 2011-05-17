@@ -31,10 +31,14 @@ module Opscode
       raise ArgumentError, "Job: tasks must be an Array of Tasks" unless @tasks.select {|o| o.kind_of?(Task)}.length == @tasks.length
       raise ArgumentError, "Job: created_at must be a Time: #{@created_at.class}" unless @created_at.kind_of?(Time)
       raise ArgumentError, "Job: updated_at must be a Time: #{@updated_at.class}" unless @updated_at.kind_of?(Time)
+
+      # created_at and updated_at are rounded down to nearest second.
+      @created_at = Time.at(@created_at.to_i)
+      @updated_at = Time.at(@updated_at.to_i)
     end
 
     def updated!
-      @updated_at = Time.now
+      @updated_at = Time.at(Time.now.to_i)
     end
 
     def ==(rhs)
