@@ -1,8 +1,10 @@
-require 'couchrest'
+require 'uuidtools'
 
 module Opscode
   class Instance
 
+    attr_reader :db_id
+    attr_accessor :db_rev
     attr_reader :chef_log
     attr_reader :security_group_name
     attr_reader :key_pair_name
@@ -16,12 +18,14 @@ module Opscode
 
     def initialize(instance_data={})
       from_hash(instance_data)
+      @db_id ||= ("instance-" + UUIDTools::UUID.random_create.to_s)
       yield self if block_given?
     end
 
     def report
       out=<<-DANCANTDEFEND
 CREATED QS NODE:
+db_id: #{db_id}
 id: #{instance_id}
 node_name: #{node_name}
 public_hostname: #{public_hostname}
@@ -42,7 +46,9 @@ DANCANTDEFEND
         :public_ipaddress     =>  @public_ipaddress,
         :created_at           =>  @created_at,
         :api_client_name      =>  @api_client_name,
-        :node_name            =>  @node_name }
+        :node_name            =>  @node_name,
+        :_id                  =>  @db_id
+      }
     end
 
     def from_security_group(security_group)
@@ -84,71 +90,16 @@ DANCANTDEFEND
       @api_client_name      = attr_hash['api_client_name']
       @node_name            = attr_hash['node_name']
       @chef_log             = attr_hash['chef_log']
+
+      # couch-specific stuff.
+      @db_id                = attr_hash['_id']
       self
     end
 
-  end
-
-  # Store an Instance in CouchDB.
-  #
-  # Uses couch's attachments feature to keep the chef log outside of
-  # the primary object in order to relieve some strain from the js
-  # view servers.
-  class InstancePersistor < CouchRest::ExtendedDocument
-    ID = '_id'
-
-    timestamps!
-
-    attr_reader :chef_log
-
-    # Create an InstanceModel object from a instance of class Instance.
-    # overrides the normal CouchRest::ExtendedDocument initializer.
-    def initialize(couchdb_url, instance_object)
-      on(CouchRest::Server.new(couchdb_url))
-
-      # this branch when fetching a doc from the db
-      if instance_object.kind_of?(CouchRest::Document)
-        self['instance'] = Instance.new(instance_object)
-        super(instance_object)
-
-        @chef_log = read_attachment('chef_log')
-        instance.chef_log = @chef_log
-
-      else # this branch when creating new doc from data
-        self['instance'] = instance_object.to_hash
-        @chef_log = instance_object.chef_log
-      end
-    end
-
-    def db_id
-      self[ID]
-    end
-
-    def instance
-      self['instance']
-    end
-
-    def create(*args)
-      attach_log
-      super
-    end
-
-    def save(*args)
-      attach_log
-      super
-    end
-
-    # Adds the (probably pretty large) chef log for the instance to the couchrest
-    # document as an attachment.
-    #--
-    # Have to wrap it in a StringIO because couchrest assumes for some reason that
-    # you will only create attachments from files. why, god, why?
-    def attach_log
-      if new_document?
-        create_attachment(:name => 'chef_log', :file => StringIO.new(@chef_log), :content_type => 'text/plain')
-      else
-        update_attachment(:name => 'chef_log', :file => StringIO.new(@chef_log), :content_type => 'text/plain')
-      end
+    def ==(rhs)
+      # easy way out.
+      rhs.kind_of?(self.class) &&
+        self.to_hash == rhs.to_hash
     end
 
   end

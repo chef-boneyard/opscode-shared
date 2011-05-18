@@ -1,6 +1,7 @@
 require File.expand_path('../../spec_helper', __FILE__)
 require 'chef/api_client'
 require 'chef/node'
+require 'couchrest'
 
 SecurityGroup = Struct.new(:name, :description, :ip_permissions, :owner_id)
 KeyPair = Struct.new(:name, :fingerprint, :private_key)
@@ -75,7 +76,9 @@ describe Instance do
         :instance_id => 'i-42',
         :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
         :public_ipaddress => '123.45.67.89',
-        :created_at => '2011-05-10 20:15:47 UTC'
+        :created_at => '2011-05-10 20:15:47 UTC',
+        # don't know what _id is until it's created
+        :_id => @instance.db_id
       }
     end
   end
@@ -112,4 +115,33 @@ describe Instance do
 
     it_behaves_like "a fully created instance object"
   end
+
+  describe "persistence" do
+    before do
+      CouchRest.database!("http://localhost:5984/instance_spec")
+      @instance_persistor = InstancePersistor.new("http://localhost:5984/instance_spec")
+
+      @instance = Instance.new({
+        'security_group_name' => 'example-sg',
+        'key_pair_name' => 'skynet-governator-qs-12345-kp',
+        'api_client_name' => 'i-42',
+        'node_name' => 'i-42',
+        'instance_id' => 'i-42',
+        'public_hostname' => 'ec2-123-45-67-89.compute-1.amazonaws.com',
+        'public_ipaddress' => '123.45.67.89',
+        'created_at' => '2011-05-10 20:15:47 UTC',
+        'chef_log'  => 'built yer infrastructure yo.'
+      })
+
+      @instance_persistor.save(@instance)
+    end
+
+    it "can retrieve the instance by its id" do
+      retrieved_instance = @instance_persistor.find_by_id(@instance.db_id)
+      @instance.should == retrieved_instance
+    end
+
+    it_behaves_like "a fully created instance object"
+  end
+
 end
