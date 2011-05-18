@@ -8,6 +8,8 @@ Gem::Specification.new do |s|
   s.author = "Tim Hinderliter"
   s.email = "tim@opscode.com"
 
+  s.add_dependency "couchrest"
+
   s.require_path = 'lib'
   s.files = Dir.glob("{distro,lib}/**/*")
 end
