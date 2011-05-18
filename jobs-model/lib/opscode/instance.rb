@@ -6,6 +6,7 @@ module Opscode
     attr_reader :db_id
     attr_accessor :db_rev
     attr_reader :chef_log
+    attr_reader :job_id
     attr_reader :security_group_name
     attr_reader :key_pair_name
     attr_reader :api_client_name
@@ -27,6 +28,7 @@ module Opscode
 CREATED QS NODE:
 db_id: #{db_id}
 id: #{instance_id}
+job_id: #{job_id}
 node_name: #{node_name}
 public_hostname: #{public_hostname}
 public_ipaddress: #{public_ipaddress}
@@ -39,7 +41,9 @@ DANCANTDEFEND
     end
 
     def to_hash
-      { :security_group_name  =>  @security_group_name,
+      {
+        :job_id               =>  @job_id
+        :security_group_name  =>  @security_group_name,
         :key_pair_name        =>  @key_pair_name,
         :instance_id          =>  @instance_id,
         :public_hostname      =>  @public_hostname,
@@ -81,6 +85,7 @@ DANCANTDEFEND
     private
 
     def from_hash(attr_hash)
+      @job_id               = attr_hash['job_id']
       @security_group_name  = attr_hash['security_group_name']
       @key_pair_name        = attr_hash['key_pair_name']
       @instance_id          = attr_hash['instance_id']
