@@ -5,6 +5,7 @@ require 'opscode/dark_launch'
 
 describe Opscode::DarkLaunch do
   before(:each) do
+    Chef::Log.level = :fatal
     @valid_config_file = Tempfile.new("valid_dark_launch_config")
     @valid_config_file_contents = <<EOM
 {
