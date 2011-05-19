@@ -79,9 +79,22 @@ describe JobPersistor do
       results.first.should == job
     end
 
-    it "can save it again" do
-      pending "need to handle couchdb revs"
+    it "can save it again and again" do
       @persistor.save(@job)
+      @persistor.save(@job)
+    end
+
+    it "when saving, gets a new revision" do
+      get_rev = lambda {
+        # The etag (or _rev of the document) is JSON-encoded. Rly?
+        headers = RestClient.head("http://localhost:5984/jobs_spec/#{@job.job_id}").headers
+        Yajl::Parser.parse(headers[:etag])
+      }
+
+      first_rev = get_rev.call
+      @persistor.save(@job)
+      second_rev = get_rev.call
+      first_rev.should_not == second_rev
     end
   end
 

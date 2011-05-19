@@ -173,7 +173,6 @@ describe Instance do
     it_behaves_like "a fully created instance object"
 
     it "can save more than once" do
-      pending "need to handle couchdb revs"
       @instance_persistor.save(@instance)
       @instance_persistor.save(@instance)
     end

@@ -3,6 +3,9 @@ require 'uri'
 require 'restclient'
 require 'yajl'
 
+# for .to_json on Hash/Array
+require 'json'
+
 module Opscode::Persistor
   class CouchDBAngry < RuntimeError
     attr_reader :caused_by
@@ -48,6 +51,27 @@ module Opscode::Persistor
       self.class.inflate_object(Yajl::Parser.parse(rest_res, :symbolize_keys => true))
     rescue Exception => e
       raise CouchDBAngry.new(e)
+    end
+
+    # Saves a new document, or saves over an existing document with
+    # the given id. Returns the revision id of the document saved.
+    def force_save(docid, hash)
+      begin
+        # Do a HEAD request and pull out the etag to determine the
+        # current rev of the document. Then merge that in with the
+        # hash so we can update it. The etag has quotes around it, so
+        # is encoded as a JSON value.
+        current_rev_str = RestClient.head(url(docid)).headers[:etag]
+        current_rev = Yajl::Parser.parse(current_rev_str)
+        hash = hash.merge(:_rev => current_rev)
+      rescue RestClient::ResourceNotFound
+        # New document; don't include _rev.
+      end
+      put_res_str = RestClient.put(url(docid), hash.to_json)
+      put_res = Yajl::Parser.parse(put_res_str)
+
+      # return the revision of the new document.
+      put_res['rev']
     end
 
     def self.get_design_doc

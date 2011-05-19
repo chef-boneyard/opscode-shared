@@ -41,8 +41,8 @@ module Opscode::Persistor
     end
 
     def save(job)
-      json = job.to_hash.merge(:type => "job").to_json
-      RestClient.put(url(job.job_id), json)
+      hash = job.to_hash.merge(:type => "job")
+      force_save(job.job_id, hash)
     rescue Exception => e
       raise CouchDBAngry.new(e)
     end

@@ -27,7 +27,6 @@ module Opscode::Persistor
 
       if data[:_attachments] && data[:_attachments][:chef_log]
         res.chef_log = Base64.decode64(data[:_attachments][:chef_log][:data])
-        res.db_rev = data[:_rev]
       end
       res
     end
@@ -40,16 +39,11 @@ module Opscode::Persistor
       # parse the output of the put, so we can get the revision ID, so
       # then we can include it in the attachment upload, since it's
       # required.
-      res = RestClient.put(url(instance.db_id), instance.to_hash.merge(:type => "instance").to_json)
-      res = Yajl::Parser.parse(res)
-      instance.db_rev = res['rev']
+      hash = instance.to_hash.merge(:type => "instance")
+      db_rev = force_save(instance.db_id, hash)
 
       if instance.chef_log
-        attachment_url = "#{url(instance.db_id)}/chef_log"
-        if instance.db_rev
-          attachment_url += "?rev=#{instance.db_rev}"
-        end
-
+        attachment_url = "#{url(instance.db_id)}/chef_log?rev=#{db_rev}"
         RestClient.put(attachment_url, instance.chef_log)
       end
     rescue Exception => e

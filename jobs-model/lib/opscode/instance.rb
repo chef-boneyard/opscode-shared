@@ -4,7 +4,6 @@ module Opscode
   class Instance
 
     attr_reader :db_id
-    attr_accessor :db_rev
     attr_reader :job_id
     attr_reader :chef_log
     attr_reader :job_id
