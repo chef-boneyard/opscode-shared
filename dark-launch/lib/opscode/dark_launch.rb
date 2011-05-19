@@ -11,10 +11,9 @@ module Opscode
     def self.is_feature_enabled?(feature_name, orgname)
       # Clear configuration if the file has changed on disk (newer or
       # older)
-      if @features_by_org &&
-          Chef::Config[:dark_launch_config_filename] &&
-          File.exist?(Chef::Config[:dark_launch_config_filename]) &&
-          @features_by_org_mtime != File.mtime(Chef::Config[:dark_launch_config_filename])
+      if @features_by_org && config_file_path &&
+          File.exist?(config_file_path) &&
+          @features_by_org_mtime != config_file_mtime
         Chef::Log.debug("DarkLaunch: reloading changed config file")
         @features_by_org = nil
       end
@@ -25,7 +24,7 @@ module Opscode
           Chef::Log.debug("DarkLaunch: @features_by_org = #{result.inspect}")
           result
         rescue
-          Chef::Log.error("DarkLaunch: got exception parsing #{Chef::Config[:dark_launch_config_filename]}, returning false...")
+          Chef::Log.error("DarkLaunch: got exception parsing #{config_file_path}, returning false...")
           Chef::Log.error("#{$!}\n  " + $!.backtrace.join("\n  "))
           
           # if we had an error, set the @features_by_org and
@@ -35,16 +34,18 @@ module Opscode
           @features_by_org_mtime = Time.now
           Hash.new
         end
-      
-      if @features_by_org[feature_name] && @features_by_org[feature_name][orgname]
-        Chef::Log.debug("DarkLaunch: #{feature_name} IS enabled for #{orgname}")
-        true
-      else
-        Chef::Log.debug("DarkLaunch: #{feature_name} is not enabled for #{orgname}")
-        false
-      end
+
+      # !! to turn falsey values into real false
+      is_enabled = !!(@features_by_org[feature_name] &&
+                      @features_by_org[feature_name][orgname])
+      msg = ["DarkLaunch: #{feature_name}",
+             is_enabled ? "IS" : "is NOT",
+             "for #{orgname}"].join(" ")
+      Chef::Log.debug(msg)
+      is_enabled
     end
 
+    # for testing
     def self.reset_features_config
       @features_by_org = nil
       @features_by_org_mtime = nil
@@ -58,14 +59,13 @@ module Opscode
     #    value = true
     private
     def self.load_features_config
-      if Chef::Config[:dark_launch_config_filename]
-        contents = IO.read(Chef::Config[:dark_launch_config_filename])
+      if config_file_path
+        contents = IO.read(config_file_path)
         orgs_by_feature = Chef::JSONCompat.from_json(contents)
 
         # check correct form for the config.
-        exception_msg = "#{Chef::Config[:dark_launch_config_filename]} should be a hash: keys are feature name, values are arrays of orgs with that feature enabled"
+        exception_msg = "#{config_file_path} should be a hash: keys are feature name, values are arrays of orgs with that feature enabled"
         raise exception_msg unless orgs_by_feature.is_a?(Hash)
-
         result = Hash.new
         orgs_by_feature.keys.each do |feature_name|
           # check correct form for config, for each feature.
@@ -87,11 +87,20 @@ module Opscode
           end
         end
           
-        @features_by_org_mtime = File.mtime(Chef::Config[:dark_launch_config_filename])
+        @features_by_org_mtime = config_file_mtime
         result
       else
         Hash.new
       end
     end
+
+    def self.config_file_mtime
+      File.mtime(config_file_path)
+    end
+
+    def self.config_file_path
+      Chef::Config[:dark_launch_config_filename]
+    end
+
   end
 end
