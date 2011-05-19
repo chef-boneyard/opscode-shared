@@ -6,23 +6,41 @@ require 'yajl'
 module Opscode::Persistor
   class InstancePersistor < BasePersistor
 
+    set_design_doc <<-EOD
+{
+  "language": "javascript",
+  "views":
+  {
+    "all": {
+      "map": "function(doc) { if (doc.type == 'instance')  emit(null, doc.id) }"
+    },
+    "by_job_id": {
+      "map": "function(doc) { if (doc.type == 'instance')  emit(doc.job_id, doc.id) }"
+    }
+  }
+}
+    EOD
+
+    # This method is passed a hash with symbols as keys!
     def self.inflate_object(data)
-      # TODO: get clear on whether to symbolize keys or not.
-      data = Mash.new(data)
       res = Instance.new(data)
 
-      if data['_attachments'] && data['_attachments']['chef_log']
-        res.chef_log = Base64.decode64(data['_attachments']['chef_log']['data'])
-        res.db_rev = data['_rev']
+      if data[:_attachments] && data[:_attachments][:chef_log]
+        res.chef_log = Base64.decode64(data[:_attachments][:chef_log][:data])
+        res.db_rev = data[:_rev]
       end
       res
+    end
+
+    def find_by_job_id(job_id)
+      execute_view("by_job_id", job_id)
     end
 
     def save(instance)
       # parse the output of the put, so we can get the revision ID, so
       # then we can include it in the attachment upload, since it's
       # required.
-      res = RestClient.put(url(instance.db_id), instance.to_hash.to_json)
+      res = RestClient.put(url(instance.db_id), instance.to_hash.merge(:type => "instance").to_json)
       res = Yajl::Parser.parse(res)
       instance.db_rev = res['rev']
 

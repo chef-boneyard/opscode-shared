@@ -5,6 +5,7 @@ module Opscode
 
     attr_reader :db_id
     attr_accessor :db_rev
+    attr_reader :job_id
     attr_reader :chef_log
     attr_reader :job_id
     attr_reader :security_group_name
@@ -27,7 +28,7 @@ module Opscode
       out=<<-DANCANTDEFEND
 CREATED QS NODE:
 db_id: #{db_id}
-id: #{instance_id}
+instance_id: #{instance_id}
 job_id: #{job_id}
 node_name: #{node_name}
 public_hostname: #{public_hostname}
@@ -51,6 +52,7 @@ DANCANTDEFEND
         :created_at           =>  @created_at,
         :api_client_name      =>  @api_client_name,
         :node_name            =>  @node_name,
+        :job_id               =>  @job_id,
         :_id                  =>  @db_id
       }
     end
@@ -85,19 +87,19 @@ DANCANTDEFEND
     private
 
     def from_hash(attr_hash)
-      @job_id               = attr_hash['job_id']
-      @security_group_name  = attr_hash['security_group_name']
-      @key_pair_name        = attr_hash['key_pair_name']
-      @instance_id          = attr_hash['instance_id']
-      @public_hostname      = attr_hash['public_hostname']
-      @public_ipaddress     = attr_hash['public_ipaddress']
-      @created_at           = attr_hash['created_at']
-      @api_client_name      = attr_hash['api_client_name']
-      @node_name            = attr_hash['node_name']
-      @chef_log             = attr_hash['chef_log']
+      @security_group_name  = attr_hash[:security_group_name]
+      @key_pair_name        = attr_hash[:key_pair_name]
+      @instance_id          = attr_hash[:instance_id]
+      @public_hostname      = attr_hash[:public_hostname]
+      @public_ipaddress     = attr_hash[:public_ipaddress]
+      @created_at           = attr_hash[:created_at]
+      @api_client_name      = attr_hash[:api_client_name]
+      @node_name            = attr_hash[:node_name]
+      @chef_log             = attr_hash[:chef_log]
+      @job_id               = attr_hash[:job_id]
 
       # couch-specific stuff.
-      @db_id                = attr_hash['_id']
+      @db_id                = attr_hash[:_id]
       self
     end
 

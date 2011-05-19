@@ -12,6 +12,21 @@ module Opscode::Persistor
   # written in java and therefore irrelevant.
   class JobPersistor < BasePersistor
 
+    set_design_doc <<-EOD
+{
+  "language": "javascript",
+  "views":
+  {
+    "all": {
+      "map": "function(doc) { if (doc.type == 'job') emit(null, doc.id) }"
+    },
+    "by_orgname": {
+      "map": "function(doc) { if (doc.type == 'job') emit(doc.orgname, doc.id) }"
+    }
+  }
+}
+    EOD
+
     def self.inflate_object(data)
       job_spec = data
       job_spec[:tasks].map! {|t| Opscode::Task.new(t)}
@@ -21,8 +36,13 @@ module Opscode::Persistor
       Opscode::Job.new(job_spec)
     end
 
+    def find_by_orgname(orgname)
+      execute_view("by_orgname", orgname)
+    end
+
     def save(job)
-      RestClient.put(url(job.job_id), job.to_json)
+      json = job.to_hash.merge(:type => "job").to_json
+      RestClient.put(url(job.job_id), json)
     rescue Exception => e
       raise CouchDBAngry.new(e)
     end

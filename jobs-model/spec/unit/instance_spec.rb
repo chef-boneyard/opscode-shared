@@ -56,6 +56,10 @@ describe Instance do
       @instance.node_name.should == 'i-42'
     end
 
+    it "stores the job_id" do
+      @instance.job_id.should == 'job-1234'
+    end
+
     it "stores the EC2 instance data" do
       @instance.instance_id.should == 'i-42'
       @instance.public_hostname.should == 'ec2-123-45-67-89.compute-1.amazonaws.com'
@@ -77,6 +81,7 @@ describe Instance do
         :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
         :public_ipaddress => '123.45.67.89',
         :created_at => '2011-05-10 20:15:47 UTC',
+        :job_id => 'job-1234',
         # don't know what _id is until it's created
         :_id => @instance.db_id
       }
@@ -85,13 +90,13 @@ describe Instance do
 
   describe "when created with a block" do
     before do
-      @instance = Instance.new do |i|
+      @instance = Instance.new(:job_id => "job-1234") do |i|
         i.from_security_group @security_group
         i.from_key_pair @key_pair
         i.from_cloud_server @server
         i.from_api_client @api_client
         i.from_node @node
-        i.from_log  'built yer infrastructure yo.'
+        i.from_log 'built yer infrastructure yo.'
       end
     end
 
@@ -101,15 +106,16 @@ describe Instance do
   describe "when created with an attribute hash" do
     before do
       @instance = Instance.new({
-        'security_group_name' => 'example-sg',
-        'key_pair_name' => 'skynet-governator-qs-12345-kp',
-        'api_client_name' => 'i-42',
-        'node_name' => 'i-42',
-        'instance_id' => 'i-42',
-        'public_hostname' => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        'public_ipaddress' => '123.45.67.89',
-        'created_at' => '2011-05-10 20:15:47 UTC',
-        'chef_log'  => 'built yer infrastructure yo.'
+        :security_group_name => 'example-sg',
+        :key_pair_name => 'skynet-governator-qs-12345-kp',
+        :api_client_name => 'i-42',
+        :node_name => 'i-42',
+        :instance_id => 'i-42',
+        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
+        :public_ipaddress => '123.45.67.89',
+        :created_at => '2011-05-10 20:15:47 UTC',
+        :chef_log => 'built yer infrastructure yo.',
+        :job_id => 'job-1234'
       })
     end
 
@@ -118,22 +124,45 @@ describe Instance do
 
   describe "persistence" do
     before do
-      CouchRest.database!("http://localhost:5984/instance_spec")
+      begin
+        RestClient.delete('http://localhost:5984/instance_spec')
+      rescue RestClient::ResourceNotFound
+      end
+      
+      begin
+        RestClient.put('http://localhost:5984/instance_spec', "")
+      rescue RestClient::PreconditionFailed
+      end
+
       @instance_persistor = InstancePersistor.new("http://localhost:5984/instance_spec")
 
       @instance = Instance.new({
-        'security_group_name' => 'example-sg',
-        'key_pair_name' => 'skynet-governator-qs-12345-kp',
-        'api_client_name' => 'i-42',
-        'node_name' => 'i-42',
-        'instance_id' => 'i-42',
-        'public_hostname' => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        'public_ipaddress' => '123.45.67.89',
-        'created_at' => '2011-05-10 20:15:47 UTC',
-        'chef_log'  => 'built yer infrastructure yo.'
+        :security_group_name => 'example-sg',
+        :key_pair_name => 'skynet-governator-qs-12345-kp',
+        :api_client_name => 'i-42',
+        :node_name => 'i-42',
+        :instance_id => 'i-42',
+        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
+        :public_ipaddress => '123.45.67.89',
+        :created_at => '2011-05-10 20:15:47 UTC',
+        :chef_log => 'built yer infrastructure yo.',
+        :job_id => 'job-1234'
       })
-
       @instance_persistor.save(@instance)
+
+      @instance2 = Instance.new({
+        :security_group_name => 'example-sg',
+        :key_pair_name => 'skynet-governator-qs-12345-kp',
+        :api_client_name => 'i-42',
+        :node_name => 'i-42',
+        :instance_id => 'i-42',
+        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
+        :public_ipaddress => '123.45.67.89',
+        :created_at => '2011-05-10 20:15:47 UTC',
+        :chef_log => 'built yer infrastructure yo.',
+        :job_id => 'job-2345'
+      })
+      @instance_persistor.save(@instance2)
     end
 
     it "can retrieve the instance by its id" do
@@ -142,6 +171,31 @@ describe Instance do
     end
 
     it_behaves_like "a fully created instance object"
+
+    it "can save more than once" do
+      pending "need to handle couchdb revs"
+      @instance_persistor.save(@instance)
+      @instance_persistor.save(@instance)
+    end
+
+    it "can fetch documents by job_id" do
+      # save these new docs with different job id's than @instance, as
+      # there will be many of those (however many steps are enclosed
+      # in this 'describe' block)
+      instance1 = Instance.new(@instance.to_hash.merge(:_id => "instance-job-fetch-1", :job_id => "job-fetch-1"))
+      @instance_persistor.save(instance1)
+      instance2 = Instance.new(@instance.to_hash.merge(:_id => "instance-job-fetch-2", :job_id => "job-fetch-2"))
+      @instance_persistor.save(instance2)
+
+      jobs1 = @instance_persistor.find_by_job_id('job-fetch-1')
+      jobs1.length.should == 1
+      jobs1.first.should == instance1
+
+      jobs2 = @instance_persistor.find_by_job_id('job-fetch-2')
+      jobs2.length.should == 1
+      jobs2.first.should == instance2
+    end
+
   end
 
 end

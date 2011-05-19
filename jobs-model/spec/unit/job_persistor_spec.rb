@@ -5,6 +5,11 @@ require 'uuidtools'
 describe JobPersistor do
   before(:all) do
     begin
+      RestClient.delete('http://localhost:5984/jobs_spec')
+    rescue RestClient::ResourceNotFound
+    end
+
+    begin
       RestClient.put('http://localhost:5984/jobs_spec', "FUUUUU")
     rescue RestClient::PreconditionFailed
     end
@@ -59,8 +64,24 @@ describe JobPersistor do
       @persistor.save(@job)
     end
 
-    it "can fetch the item by id" do
+    it "can find a job by id" do
       @persistor.find_by_id(@job.job_id).should == @job
+    end
+
+    it "can find a job by orgname" do
+      # save a different job with a different orgname so we're sure
+      # there's just one.
+      job = Job.new(:orgname => "adifferentorg", :tasks => @tasks)
+      @persistor.save(job)
+
+      results = @persistor.find_by_orgname("adifferentorg")
+      results.length.should == 1
+      results.first.should == job
+    end
+
+    it "can save it again" do
+      pending "need to handle couchdb revs"
+      @persistor.save(@job)
     end
   end
 
