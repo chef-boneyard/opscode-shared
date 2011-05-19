@@ -43,7 +43,6 @@ DANCANTDEFEND
 
     def to_hash
       {
-        :job_id               =>  @job_id
         :security_group_name  =>  @security_group_name,
         :key_pair_name        =>  @key_pair_name,
         :instance_id          =>  @instance_id,
