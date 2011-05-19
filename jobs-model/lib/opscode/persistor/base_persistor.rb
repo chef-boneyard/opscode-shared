@@ -5,6 +5,7 @@ require 'yajl'
 
 # for .to_json on Hash/Array
 require 'json'
+require 'rest-client'
 
 module Opscode::Persistor
   class CouchDBAngry < RuntimeError
@@ -27,7 +28,7 @@ module Opscode::Persistor
       begin
         RestClient.get(db_url)
       rescue => e
-        if e.is_a?(RestClient::ResourceNotfound) && force_create
+        if e.is_a?(RestClient::ResourceNotFound) && force_create
           RestClient.put(db_url, "meaningless")
         else
           raise e
