@@ -148,7 +148,6 @@ describe Instance do
         :chef_log => 'built yer infrastructure yo.',
         :job_id => 'job-1234'
       })
-      @instance_persistor.save(@instance)
 
       @instance2 = Instance.new({
         :security_group_name => 'example-sg',
@@ -162,10 +161,10 @@ describe Instance do
         :chef_log => 'built yer infrastructure yo.',
         :job_id => 'job-2345'
       })
-      @instance_persistor.save(@instance2)
     end
 
     it "can retrieve the instance by its id" do
+      @instance_persistor.save(@instance)
       retrieved_instance = @instance_persistor.find_by_id(@instance.db_id)
       @instance.should == retrieved_instance
     end
@@ -193,6 +192,12 @@ describe Instance do
       jobs2 = @instance_persistor.find_by_job_id('job-fetch-2')
       jobs2.length.should == 1
       jobs2.first.should == instance2
+    end
+
+    it "can fetch all instances" do
+      @instance_persistor.save(@instance)
+      @instance_persistor.save(@instance2)
+      @instance_persistor.find_all().length.should == 2
     end
 
   end

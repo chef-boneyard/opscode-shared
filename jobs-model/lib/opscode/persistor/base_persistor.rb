@@ -83,7 +83,8 @@ module Opscode::Persistor
     def self.set_design_doc(design_doc)
       @design_doc = design_doc
     end
-    
+
+    # TODO: revisit exceptions. should only throw CouchDBAngry.
     def execute_view(view_name, key)
       design_url = "#{db_url}/_design/#{self.class.name}"
       view_url = "#{design_url}/_view/#{view_name}?include_docs=true"
@@ -91,6 +92,8 @@ module Opscode::Persistor
         view_url += "&key=#{URI.encode(key.to_json)}"
       end
 
+      # Try to query the view. If that fails with 404, try to create
+      # the view and fetch it again. If that fails, puke.
       begin
         #puts "view_url = #{view_url}"
         rest_res = RestClient.get(view_url)
@@ -105,9 +108,26 @@ module Opscode::Persistor
         end
       end
 
+      # Parse the response from above, and walk over each row,
+      # inflating them.
       rest_res = Yajl::Parser.parse(rest_res, :symbolize_keys => true)
       rows = rest_res[:rows]
-      rows.map! { |row| self.class.inflate_object(row[:doc]) }
+      rows.map! do |row|
+        doc = row[:doc]
+
+        # Unfortunately the couch view API doesn't allow
+        # 'attachments=true', so we have to walk the attachments
+        # manually when they come back from a view. Prepare them in
+        # the format that inflate_object will expect.
+        if doc[:_attachments]
+          doc[:_attachments].each_key do |attachment_key|
+            attachment_url = "#{db_url}/#{doc[:_id]}/#{attachment_key}"
+            attachment_data = RestClient.get(attachment_url)
+            doc[:_attachments][attachment_key][:data] = attachment_data
+          end
+        end
+        self.class.inflate_object(doc)
+      end
       rows
     end
 

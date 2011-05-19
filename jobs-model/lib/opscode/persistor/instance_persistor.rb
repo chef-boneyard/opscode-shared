@@ -35,6 +35,10 @@ module Opscode::Persistor
       execute_view("by_job_id", job_id)
     end
 
+    def find_all()
+      execute_view("all", nil)
+    end
+
     def save(instance)
       # parse the output of the put, so we can get the revision ID, so
       # then we can include it in the attachment upload, since it's
