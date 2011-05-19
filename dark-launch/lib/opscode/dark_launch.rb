@@ -69,12 +69,21 @@ module Opscode
         result = Hash.new
         orgs_by_feature.keys.each do |feature_name|
           # check correct form for config, for each feature.
-          raise exception_msg unless orgs_by_feature[feature_name].is_a?(Array)
-          
-          # convert array of orgnames to hash for quick lookup.
-          orgs_by_feature[feature_name].each do |orgname|
-            result[feature_name] ||= Hash.new
-            result[feature_name][orgname] = true
+          feature_config = orgs_by_feature[feature_name]
+          case feature_config
+          when Array
+            # convert array of orgnames to hash for quick lookup.
+            feature_config.each do |orgname|
+              result[feature_name] ||= Hash.new
+              result[feature_name][orgname] = true
+            end
+          when TrueClass, FalseClass
+            # convert to a hash with appropriate default value, in
+            # this case always true or alwasy false for any (not yet
+            # set key)
+            result[feature_name] = Hash.new { |h, k| h[k] = feature_config }
+          else
+            raise exception_msg
           end
         end
           

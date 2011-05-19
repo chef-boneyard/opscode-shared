@@ -12,7 +12,9 @@ describe Opscode::DarkLaunch do
   "feature1":[
     "testorg1",
     "testorg2"
-  ]
+  ],
+  "feature2":true,
+  "feature3":false
 }
 EOM
     @valid_config_file.write @valid_config_file_contents
@@ -94,6 +96,16 @@ EOM
     it "should return false for a feature given an config file containing invalid JSON" do
       Chef::Config[:dark_launch_config_filename] = @bad_json_config_file.path
       Opscode::DarkLaunch.is_feature_enabled?("feature1", "testorg1").should == false
+    end
+
+    it "should return true for a feature that is switched on for all" do
+      Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
+      Opscode::DarkLaunch.is_feature_enabled?("feature2", "anything").should == true
+    end
+
+    it "should return false for a feature that is switched off for all" do
+      Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
+      Opscode::DarkLaunch.is_feature_enabled?("feature3", "anything").should == false
     end
   end
 end
