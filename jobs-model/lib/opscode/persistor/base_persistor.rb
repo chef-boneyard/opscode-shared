@@ -60,10 +60,11 @@ module Opscode::Persistor
       begin
         # Do a HEAD request and pull out the etag to determine the
         # current rev of the document. Then merge that in with the
-        # hash so we can update it. The etag has quotes around it, so
-        # is encoded as a JSON value.
-        current_rev_str = RestClient.head(url(docid)).headers[:etag]
-        current_rev = Yajl::Parser.parse(current_rev_str)
+        # hash so we can update it.
+        #
+        # The etag has quotes around it as specified by the RFC.
+        # The possibility of getting a "weak" etag is ignored
+        current_rev = RestClient.head(url(docid)).headers[:etag][1..-2]
         hash = hash.merge(:_rev => current_rev)
       rescue RestClient::ResourceNotFound
         # New document; don't include _rev.
