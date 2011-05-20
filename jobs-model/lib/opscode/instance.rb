@@ -5,8 +5,6 @@ module Opscode
 
     attr_reader :db_id
     attr_reader :job_id
-    attr_reader :chef_log
-    attr_reader :job_id
     attr_reader :security_group_name
     attr_reader :key_pair_name
     attr_reader :api_client_name

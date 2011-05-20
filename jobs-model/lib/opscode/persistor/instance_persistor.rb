@@ -1,4 +1,4 @@
-require 'opscode/job'
+require 'opscode/instance'
 require 'uri'
 require 'restclient'
 require 'yajl'
@@ -23,7 +23,7 @@ module Opscode::Persistor
 
     # This method is passed a hash with symbols as keys!
     def self.inflate_object(data)
-      res = Instance.new(data)
+      res = Opscode::Instance.new(data)
 
       if data[:_attachments] && data[:_attachments][:chef_log]
         res.chef_log = Base64.decode64(data[:_attachments][:chef_log][:data])
