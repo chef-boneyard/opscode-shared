@@ -1,11 +1,10 @@
-# TODO tim 2011-5-11: "id" instead of job_id/task_id?
-
 require 'opscode/task'
 require 'uuidtools'
 
 module Opscode
   class Job
     attr_reader :job_id
+    attr_accessor :status
     attr_reader :tasks
     attr_reader :cloud_credentials
     attr_reader :created_at  # Time
@@ -16,6 +15,8 @@ module Opscode
     # orgdb has to get set from service side after creation
     attr_accessor :orgdb
 
+    # TODO tim 2011-5-11: "id" instead of job_id/task_id?
+    # TODO tim 2011-5-19: move into from_hash, consolidate.
     def initialize(hash)
       @job_id = hash[:job_id] || ("job-" + UUIDTools::UUID.random_create.to_s)
       @tasks = hash[:tasks] || Array.new
@@ -25,6 +26,7 @@ module Opscode
       @username = hash[:username]
       @orgname = hash[:orgname]
       @orgdb = hash[:orgdb]
+      @status = hash[:status]
 
       # TODO tim 2011-5-11: duck-typing for these checks?
       raise ArgumentError, "Job: tasks must be an Array: #{@tasks.class}" unless @tasks.kind_of?(Array)
@@ -50,7 +52,8 @@ module Opscode
         updated_at == rhs.updated_at &&
         username == rhs.username &&
         orgname == rhs.orgname &&
-        orgdb == rhs.orgdb
+        orgdb == rhs.orgdb &&
+        status == rhs.status
     end
 
     def self.json_create(hash)
@@ -81,7 +84,8 @@ module Opscode
               :updated_at => updated_at ? Time.at(updated_at) : Time.now,
               :username => hash['username'],
               :orgname => hash['orgname'],
-              :orgdb => hash['orgdb'])
+              :orgdb => hash['orgdb'],
+              :status => hash['status'])
     end
 
     def to_json(*args)
@@ -97,7 +101,8 @@ module Opscode
         "updated_at" => updated_at.to_i,
         "username" => username,
         "orgname" => orgname,
-        "orgdb" => orgdb
+        "orgdb" => orgdb,
+        "status" => status
       }
     end
   end

@@ -72,7 +72,7 @@ module Opscode::Persistor
       put_res_str = RestClient.put(url(docid), hash.to_json)
       put_res = Yajl::Parser.parse(put_res_str)
 
-      # return the revision of the new document.
+      # Return the revision of the just-saved document.
       put_res['rev']
     end
 

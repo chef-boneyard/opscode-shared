@@ -17,7 +17,8 @@ describe Job do
                    :username => "test_username",
                    :orgname => "test_orgname",
                    :orgdb => "chef_c587999b1cd444679b7ab2d6715488f5",
-                   :cloud_credentials => @cloud_credentials })
+                   :cloud_credentials => @cloud_credentials,
+                   :status => "success" })
     @job = Job.new(@job_args)
 
     @job_hash = {
@@ -30,7 +31,8 @@ describe Job do
       "username" => "test_username",
       "orgname" => "test_orgname",
       "orgdb" => "chef_c587999b1cd444679b7ab2d6715488f5",
-      "cloud_credentials" => @cloud_credentials.clone
+      "cloud_credentials" => @cloud_credentials.clone,
+      "status" => "success"
     }
   end
 
@@ -48,6 +50,7 @@ describe Job do
       @job.orgdb.should == "chef_c587999b1cd444679b7ab2d6715488f5"
       @job.orgdb = "newdb"
       @job.orgdb.should == "newdb"
+      @job.status.should == "success"
     end
   end
 
@@ -83,6 +86,16 @@ describe Job do
     
     it "should return not equal for different Jobs: orgname" do
       job2 = Job.new(@job_args.merge(:orgname => "different_orgname"))
+      @job.should_not == job2
+    end
+
+    it "should return not equal for different Jobs: orgdb" do
+      job2 = Job.new(@job_args.merge(:orgdb => "different_orgdb"))
+      @job.should_not == job2
+    end
+
+    it "should return not equal for different Jobs: status" do
+      job2 = Job.new(@job_args.merge(:status => "failure"))
       @job.should_not == job2
     end
 
@@ -148,6 +161,7 @@ describe Job do
       fromhash_job.orgname.should == @job.orgname
       fromhash_job.tasks.should == @job.tasks
       fromhash_job.cloud_credentials.should == @job.cloud_credentials
+      fromhash_job.status.should == @job.status
 
       fromhash_job.should == @job
     end
@@ -155,7 +169,7 @@ describe Job do
     it "should serialize if cloud credentials is nil" do
       job_no_cloud = Job.new({})
       job_no_cloud.cloud_credentials.should == nil
-      job_no_cloud.to_hash # should not_throw_exception
+      job_no_cloud.to_hash # should_not raise_error
     end
   end
 end
