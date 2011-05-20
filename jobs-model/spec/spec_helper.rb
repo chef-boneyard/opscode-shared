@@ -8,3 +8,16 @@ require 'opscode/instance'
 
 include Opscode
 include Opscode::Persistor
+
+def recreate_db(db_url)
+  begin
+    RestClient.delete(db_url)
+  rescue RestClient::ResourceNotFound
+  end
+  
+  begin
+    RestClient.put(db_url, "")
+  rescue RestClient::PreconditionFailed
+  end
+end
+

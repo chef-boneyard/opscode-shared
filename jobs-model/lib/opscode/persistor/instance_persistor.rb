@@ -12,10 +12,10 @@ module Opscode::Persistor
   "views":
   {
     "all": {
-      "map": "function(doc) { if (doc.type == 'instance')  emit(null, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc.id, doc.id) }"
     },
     "by_job_id": {
-      "map": "function(doc) { if (doc.type == 'instance')  emit(doc.job_id, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc.job_id, doc.id) }"
     }
   }
 }

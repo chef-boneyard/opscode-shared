@@ -79,6 +79,18 @@ describe JobPersistor do
       results.first.should == job
     end
 
+    it "can find all jobs" do
+      new_job_url = "http://localhost:5984/jobs_spec_findall"
+      recreate_db(new_job_url)
+      @persistor = JobPersistor.new(new_job_url)
+      @persistor.save(@job)
+
+      # should only be one
+      results = @persistor.find_all()
+      results.length.should == 1
+      results.first.should == @job
+    end
+
     it "can save it again and again" do
       @persistor.save(@job)
       @persistor.save(@job)

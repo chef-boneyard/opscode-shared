@@ -18,7 +18,7 @@ module Opscode::Persistor
   "views":
   {
     "all": {
-      "map": "function(doc) { if (doc.type == 'job') emit(null, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'job') emit(doc.id, doc.id) }"
     },
     "by_orgname": {
       "map": "function(doc) { if (doc.type == 'job') emit(doc.orgname, doc.id) }"
@@ -38,6 +38,10 @@ module Opscode::Persistor
 
     def find_by_orgname(orgname)
       execute_view("by_orgname", orgname)
+    end
+
+    def find_all()
+      execute_view("all", nil)
     end
 
     def save(job)
