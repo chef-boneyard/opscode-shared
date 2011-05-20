@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'opscode-jobs-model'
-  s.version = '0.0.1'
+  s.version = '0.0.2'
   s.platform = Gem::Platform::RUBY
   s.has_rdoc = true
   s.summary = "Model for jobs/tasks for Opscode Quick Start job system"

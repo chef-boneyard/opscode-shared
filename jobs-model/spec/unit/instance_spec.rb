@@ -124,15 +124,7 @@ describe Instance do
 
   describe "persistence" do
     before do
-      begin
-        RestClient.delete('http://localhost:5984/instance_spec')
-      rescue RestClient::ResourceNotFound
-      end
-      
-      begin
-        RestClient.put('http://localhost:5984/instance_spec', "")
-      rescue RestClient::PreconditionFailed
-      end
+      recreate_db("http://localhost:5984/instance_spec")
 
       @instance_persistor = InstancePersistor.new("http://localhost:5984/instance_spec")
 
