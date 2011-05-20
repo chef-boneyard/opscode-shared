@@ -28,10 +28,11 @@ module Opscode::Persistor
     EOD
 
     def self.inflate_object(data)
+      # TODO: move to Job#from_hash
       job_spec = data
       job_spec[:tasks].map! {|t| Opscode::Task.new(t)}
-      job_spec[:created_at] = Time.at(job_spec[:created_at])
-      job_spec[:updated_at] = Time.at(job_spec[:updated_at])
+      job_spec[:created_at] = Time.parse(job_spec[:created_at])
+      job_spec[:updated_at] = Time.parse(job_spec[:updated_at])
       job_spec.merge!(:job_id => data[:'_id'])
       Opscode::Job.new(job_spec)
     end

@@ -3,7 +3,8 @@ require File.expand_path('../../spec_helper', __FILE__)
 describe Job do
   before(:each) do
     # Time.at/to_i to round down to closest second.
-    @time_now = Time.at(Time.now.to_i)
+    @time_string = "Fri May 20 15:01:05 -0700 2011"
+    @time = Time.parse(@time_string)
     @task_args = ({ :task_id => "task-123",
                     :data => "test_data",
                     :type => "test_type" })
@@ -12,8 +13,8 @@ describe Job do
                             :aws_secret_access_key => 'test_secret_access_key', })
     @job_args = ({ :job_id => "job-test123",
                    :tasks => [Task.new(@task_args)],
-                   :created_at => @time_now,
-                   :updated_at => @time_now,
+                   :created_at => @time,
+                   :updated_at => @time,
                    :username => "test_username",
                    :orgname => "test_orgname",
                    :orgdb => "chef_c587999b1cd444679b7ab2d6715488f5",
@@ -26,8 +27,8 @@ describe Job do
       "tasks" => [{ "task-id" => "task-123",
                     "data" => "some_data",
                     "type" => "test_type" }],
-      "created_at" => @time_now.to_i,
-      "updated_at" => @time_now.to_i,
+      "created_at" => @time_string,
+      "updated_at" => @time_string,
       "username" => "test_username",
       "orgname" => "test_orgname",
       "orgdb" => "chef_c587999b1cd444679b7ab2d6715488f5",
@@ -39,8 +40,8 @@ describe Job do
   describe "the ruby language works" do
     it "should respond to its public API" do
       @job.job_id.should == "job-test123"
-      @job.created_at.should == @time_now
-      @job.updated_at.should == @time_now
+      @job.created_at.should == @time
+      @job.updated_at.should == @time
       @job.username.should == "test_username"
       @job.orgname.should == "test_orgname"
       @job.tasks.length.should == 1

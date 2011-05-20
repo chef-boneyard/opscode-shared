@@ -37,8 +37,8 @@ describe JobPersistor do
     doc['_id'].should == @job.job_id
     doc["_rev"].should_not be_nil
     doc["tasks"].should have(2).items
-    doc['created_at'].should == @job.created_at.to_i
-    doc['updated_at'].should == @job.updated_at.to_i
+    doc['created_at'].should == @job.created_at.iso8601
+    doc['updated_at'].should == @job.updated_at.iso8601
   end
 
   describe "when the object fails to save" do
