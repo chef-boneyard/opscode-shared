@@ -90,13 +90,14 @@ describe Instance do
 
   describe "when created with a block" do
     before do
-      @instance = Instance.new(:job_id => "job-1234") do |i|
+      @instance = Instance.new do |i|
         i.from_security_group @security_group
         i.from_key_pair @key_pair
         i.from_cloud_server @server
         i.from_api_client @api_client
         i.from_node @node
         i.from_log 'built yer infrastructure yo.'
+        i.from_job_id 'job-1234'
       end
     end
 

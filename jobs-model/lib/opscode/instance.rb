@@ -80,6 +80,10 @@ DANCANTDEFEND
       @chef_log = log
     end
 
+    def from_job_id(job_id)
+      @job_id = job_id
+    end
+
     private
 
     def from_hash(attr_hash)
