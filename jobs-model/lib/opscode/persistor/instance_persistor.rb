@@ -16,6 +16,9 @@ module Opscode::Persistor
     },
     "by_job_id": {
       "map": "function(doc) { if (doc.type == 'instance') emit(doc.job_id, doc.id) }"
+    },
+    "by_instance_id": {
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc.instance_id, doc.id) }"
     }
   }
 }
@@ -37,6 +40,10 @@ module Opscode::Persistor
 
     def find_all()
       execute_view("all", nil)
+    end
+
+    def find_by_instance_id(instance_id)
+      execute_view("by_instance_id", instance_id)
     end
 
     def save(instance)
