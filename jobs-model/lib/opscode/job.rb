@@ -12,11 +12,16 @@ module Opscode
 
     attr_reader :username
     attr_reader :orgname
+
     # orgdb has to get set from service side after creation
     attr_accessor :orgdb
 
     # TODO tim 2011-5-11: "id" instead of job_id/task_id?
     # TODO tim 2011-5-19: move into from_hash, consolidate.
+
+    # status is updatable
+    attr_accessor :status
+
     def initialize(hash)
       @job_id = hash[:job_id] || ("job-" + UUIDTools::UUID.random_create.to_s)
       @tasks = hash[:tasks] || Array.new
