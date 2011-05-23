@@ -11,6 +11,8 @@ describe Job do
     @cloud_credentials = ({ :provider => 'AWS',
                             :aws_access_key_id => 'test_aws_access_key',
                             :aws_secret_access_key => 'test_secret_access_key', })
+    @variables = ({ :foo => 'bar',
+                    :baz => 1, })
     @job_args = ({ :job_id => "job-test123",
                    :tasks => [Task.new(@task_args)],
                    :created_at => @time,
@@ -19,7 +21,8 @@ describe Job do
                    :orgname => "test_orgname",
                    :orgdb => "chef_c587999b1cd444679b7ab2d6715488f5",
                    :cloud_credentials => @cloud_credentials,
-                   :status => "success" })
+                   :status => "success",
+                   :variables => @variables })
     @job = Job.new(@job_args)
 
     @job_hash = {
@@ -52,6 +55,7 @@ describe Job do
       @job.orgdb = "newdb"
       @job.orgdb.should == "newdb"
       @job.status.should == "success"
+      @job.variables.should == @variables
     end
   end
 
@@ -124,6 +128,19 @@ describe Job do
       job2 = Job.new(@job_args.merge(:cloud_credentials => cloud_credentials))
       @job.should_not == job2
     end
+
+    it "should return not equal for different Jobs: variables type" do
+      job2 = Job.new(@job_args.merge(:variables => "variables"))
+      @job.should_not == job2
+    end
+
+
+    it "should return not equal for different Jobs: variables content" do
+      variables = @variables.clone
+      variables["extrakey"] = "extravalue"
+      job2 = Job.new(@job_args.merge(:variables => variables))
+      @job.should_not == job2
+    end
   end
 
   describe "initialize" do
@@ -163,6 +180,7 @@ describe Job do
       fromhash_job.tasks.should == @job.tasks
       fromhash_job.cloud_credentials.should == @job.cloud_credentials
       fromhash_job.status.should == @job.status
+      fromhash_job.variables.should == @job.variables
 
       fromhash_job.should == @job
     end
