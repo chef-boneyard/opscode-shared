@@ -11,7 +11,7 @@ describe Job do
     @cloud_credentials = ({ :provider => 'AWS',
                             :aws_access_key_id => 'test_aws_access_key',
                             :aws_secret_access_key => 'test_secret_access_key', })
-    @variables = ({ :foo => 'bar',
+    @values = ({ :foo => 'bar',
                     :baz => 1, })
     @job_args = ({ :job_id => "job-test123",
                    :tasks => [Task.new(@task_args)],
@@ -22,7 +22,7 @@ describe Job do
                    :orgdb => "chef_c587999b1cd444679b7ab2d6715488f5",
                    :cloud_credentials => @cloud_credentials,
                    :status => "success",
-                   :variables => @variables })
+                   :values => @values })
     @job = Job.new(@job_args)
 
     @job_hash = {
@@ -55,7 +55,7 @@ describe Job do
       @job.orgdb = "newdb"
       @job.orgdb.should == "newdb"
       @job.status.should == "success"
-      @job.variables.should == @variables
+      @job.values.should == @values
     end
   end
 
@@ -129,16 +129,16 @@ describe Job do
       @job.should_not == job2
     end
 
-    it "should return not equal for different Jobs: variables type" do
-      job2 = Job.new(@job_args.merge(:variables => "variables"))
+    it "should return not equal for different Jobs: values type" do
+      job2 = Job.new(@job_args.merge(:values => "values"))
       @job.should_not == job2
     end
 
 
-    it "should return not equal for different Jobs: variables content" do
-      variables = @variables.clone
-      variables["extrakey"] = "extravalue"
-      job2 = Job.new(@job_args.merge(:variables => variables))
+    it "should return not equal for different Jobs: values content" do
+      values = @values.clone
+      values["extrakey"] = "extravalue"
+      job2 = Job.new(@job_args.merge(:values => values))
       @job.should_not == job2
     end
   end
@@ -180,7 +180,7 @@ describe Job do
       fromhash_job.tasks.should == @job.tasks
       fromhash_job.cloud_credentials.should == @job.cloud_credentials
       fromhash_job.status.should == @job.status
-      fromhash_job.variables.should == @job.variables
+      fromhash_job.values.should == @job.values
 
       fromhash_job.should == @job
     end

@@ -9,7 +9,7 @@ module Opscode
     attr_reader :cloud_credentials
     attr_reader :created_at  # Time
     attr_reader :updated_at  # Time
-    attr_reader :variables
+    attr_reader :values
 
     attr_reader :username
     attr_reader :orgname
@@ -33,7 +33,7 @@ module Opscode
       @orgname = hash[:orgname]
       @orgdb = hash[:orgdb]
       @status = hash[:status]
-      @variables = hash[:variables] || {}
+      @values = hash[:values] || {}
 
       # TODO tim 2011-5-11: duck-typing for these checks?
       raise ArgumentError, "Job: tasks must be an Array: #{@tasks.class}" unless @tasks.kind_of?(Array)
@@ -61,7 +61,7 @@ module Opscode
         orgname == rhs.orgname &&
         orgdb == rhs.orgdb &&
         status == rhs.status &&
-        variables == rhs.variables
+        values == rhs.values
     end
 
     def self.json_create(hash)
@@ -94,7 +94,7 @@ module Opscode
               :orgname => hash['orgname'],
               :orgdb => hash['orgdb'],
               :status => hash['status'],
-              :variables => hash['variables'])
+              :values => hash['values'])
     end
 
     def to_json(*args)
@@ -112,7 +112,7 @@ module Opscode
         "orgname" => orgname,
         "orgdb" => orgdb,
         "status" => status,
-        "variables" => variables,
+        "values" => values,
       }
     end
   end
