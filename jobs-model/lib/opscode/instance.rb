@@ -38,6 +38,16 @@ chef_log:
 DANCANTDEFEND
     end
 
+    def to_json(*args)
+      data = to_hash
+      data['json_class'] = self.class.name
+      data.to_json(*args)
+    end
+
+    def self.json_create(hash)
+      new(hash)
+    end
+
     def to_hash
       {
         :security_group_name  =>  @security_group_name,
