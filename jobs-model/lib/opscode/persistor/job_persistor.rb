@@ -22,6 +22,9 @@ module Opscode::Persistor
     },
     "by_orgname": {
       "map": "function(doc) { if (doc.type == 'job') emit(doc.orgname, doc.id) }"
+    },
+    "by_id": {
+      "map": "function(doc) { if (doc.type == 'job') emit(doc._id, null) }"
     }
   }
 }
@@ -39,6 +42,10 @@ module Opscode::Persistor
 
     def find_by_orgname(orgname)
       execute_view("by_orgname", orgname)
+    end
+
+    def find_by_id(id)
+      execute_view("by_id", id)
     end
 
     def find_all()
