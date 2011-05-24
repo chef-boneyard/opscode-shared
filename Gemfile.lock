@@ -1,0 +1,161 @@
+GIT
+  remote: git://github.com/opscode/chef.git
+  revision: ee88686d5fe19e306fccf060667055365bb78dfa
+  branch: pl-master
+  specs:
+    chef (0.10.0)
+      bunny (>= 0.6.0)
+      erubis
+      highline
+      json (>= 1.4.4, <= 1.5.2)
+      mixlib-authentication (>= 1.1.0)
+      mixlib-cli (>= 1.1.0)
+      mixlib-config (>= 1.1.2)
+      mixlib-log (>= 1.3.0)
+      moneta
+      net-ssh (~> 2.1.3)
+      net-ssh-multi (~> 1.0.1)
+      ohai (>= 0.6.0)
+      rest-client (>= 1.0.4, < 1.7.0)
+      treetop (~> 1.4.9)
+      uuidtools
+
+GIT
+  remote: git://github.com/opscode/couchrest.git
+  revision: 7dc3fa25e678c602641e29908fe9e31fbc7388df
+  specs:
+    couchrest (0.23)
+      json (>= 1.1.2)
+      mime-types (>= 1.15)
+      rest-client (>= 0.5)
+
+GIT
+  remote: git@github.com:opscode/opscode-cucumber.git
+  revision: 1aa3c8cda63bdb6c3b2a1161701ee7dffa2f5d14
+  specs:
+    opscode-cucumber (0.1.1)
+      actionpack (>= 2.3.5)
+      mechanize (>= 1.0.0)
+      rspec (>= 1.2.9)
+      rspec-rails (>= 1.3.2)
+      webrat (= 0.7.0)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    abstract (1.0.0)
+    actionpack (3.0.1)
+      activemodel (= 3.0.1)
+      activesupport (= 3.0.1)
+      builder (~> 2.1.2)
+      erubis (~> 2.6.6)
+      i18n (~> 0.4.1)
+      rack (~> 1.2.1)
+      rack-mount (~> 0.6.12)
+      rack-test (~> 0.5.4)
+      tzinfo (~> 0.3.23)
+    activemodel (3.0.1)
+      activesupport (= 3.0.1)
+      builder (~> 2.1.2)
+      i18n (~> 0.4.1)
+    activesupport (3.0.1)
+    builder (2.1.2)
+    bunny (0.6.0)
+    ci_reporter (1.6.2)
+      builder (>= 2.1.2)
+    cucumber (0.9.4)
+      builder (~> 2.1.2)
+      diff-lcs (~> 1.1.2)
+      gherkin (~> 2.2.9)
+      json (~> 1.4.6)
+      term-ansicolor (~> 1.0.5)
+    diff-lcs (1.1.2)
+    erubis (2.6.6)
+      abstract (>= 1.0.0)
+    gherkin (2.2.9)
+      json (~> 1.4.6)
+      term-ansicolor (~> 1.0.5)
+    highline (1.6.2)
+    i18n (0.4.2)
+    json (1.4.6)
+    mechanize (1.0.0)
+      nokogiri (>= 1.2.1)
+    mime-types (1.16)
+    mixlib-authentication (1.1.4)
+      mixlib-log
+    mixlib-cli (1.2.0)
+    mixlib-config (1.1.2)
+    mixlib-log (1.3.0)
+    moneta (0.6.0)
+    net-ssh (2.1.4)
+    net-ssh-gateway (1.1.0)
+      net-ssh (>= 1.99.1)
+    net-ssh-multi (1.0.1)
+      net-ssh (>= 1.99.2)
+      net-ssh-gateway (>= 0.99.0)
+    nokogiri (1.4.4)
+    ohai (0.6.4)
+      mixlib-cli
+      mixlib-config
+      mixlib-log
+      systemu
+      yajl-ruby
+    polyglot (0.3.1)
+    rack (1.2.3)
+    rack-mount (0.6.14)
+      rack (>= 1.0.0)
+    rack-test (0.5.4)
+      rack (>= 1.0)
+    railties (3.0.1)
+      actionpack (= 3.0.1)
+      activesupport (= 3.0.1)
+      rake (>= 0.8.4)
+      thor (~> 0.14.0)
+    rake (0.9.0)
+    rest-client (1.6.1)
+      mime-types (>= 1.16)
+    rspec (2.5.0)
+      rspec-core (~> 2.5.0)
+      rspec-expectations (~> 2.5.0)
+      rspec-mocks (~> 2.5.0)
+    rspec-core (2.5.2)
+    rspec-expectations (2.5.0)
+      diff-lcs (~> 1.1.2)
+    rspec-mocks (2.5.0)
+    rspec-rails (2.5.0)
+      actionpack (~> 3.0)
+      activesupport (~> 3.0)
+      railties (~> 3.0)
+      rspec (~> 2.5.0)
+    systemu (2.2.0)
+    term-ansicolor (1.0.5)
+    thor (0.14.6)
+    treetop (1.4.9)
+      polyglot (>= 0.3.1)
+    tzinfo (0.3.27)
+    uuidtools (2.1.2)
+    webrat (0.7.0)
+      nokogiri (>= 1.2.0)
+      rack (>= 1.0)
+      rack-test (>= 0.5.3)
+    yajl-ruby (0.8.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  activesupport (~> 3.0.0)
+  chef!
+  ci_reporter (= 1.6.2)
+  couchrest!
+  cucumber (= 0.9.4)
+  gherkin
+  json (= 1.4.6)
+  opscode-cucumber!
+  rack-test (= 0.5.4)
+  rake
+  rest-client (~> 1.6.0)
+  rspec (~> 2.5.0)
+  rspec-rails (~> 2.5.0)
+  uuidtools
+  webrat (= 0.7.0)
