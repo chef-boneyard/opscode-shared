@@ -45,7 +45,8 @@ DANCANTDEFEND
     end
 
     def self.json_create(hash)
-      new(hash)
+      # from_hash wants the keys to be syms, not strings
+      new(hash.inject({}) {|res, (k, v)| res[k.to_sym] = v; res })
     end
 
     def to_hash
