@@ -122,6 +122,12 @@ DANCANTDEFEND
       @db_id = db_id
     end
 
+    def ==(rhs)
+      # easy way out.
+      rhs.kind_of?(self.class) &&
+        self.to_hash == rhs.to_hash
+    end
+
     private
 
     def from_hash(attr_hash)
@@ -137,12 +143,6 @@ DANCANTDEFEND
       @job_id               = attr_hash[:job_id]
       @db_id                = attr_hash[:_id] # couch_specific
       self
-    end
-
-    def ==(rhs)
-      # easy way out.
-      rhs.kind_of?(self.class) &&
-        self.to_hash == rhs.to_hash
     end
 
     def sexy_print(obj)
