@@ -4,24 +4,20 @@ require 'uuidtools'
 module Opscode
   class Job
     attr_reader :job_id
-    attr_accessor :status
     attr_reader :tasks
-    attr_reader :cloud_credentials
     attr_reader :created_at  # Time
     attr_reader :updated_at  # Time
     attr_reader :values
-
     attr_reader :username
     attr_reader :orgname
 
     # orgdb has to get set from service side after creation
     attr_accessor :orgdb
+    attr_accessor :cloud_credentials
+    attr_accessor :status
 
     # TODO tim 2011-5-11: "id" instead of job_id/task_id?
     # TODO tim 2011-5-19: move into from_hash, consolidate.
-
-    # status is updatable
-    attr_accessor :status
 
     def initialize(hash)
       @job_id = hash[:job_id] || ("job-" + UUIDTools::UUID.random_create.to_s)
