@@ -2,6 +2,7 @@ require 'opscode/job'
 require 'uri'
 require 'restclient'
 require 'yajl'
+require 'base64'
 
 # for .to_json on Hash/Array
 require 'json'
@@ -49,7 +50,20 @@ module Opscode::Persistor
       # TODO: tim, 2011-5-18: always including attachments=true may be
       # bad. revisit?
       rest_res = RestClient.get(url(obj_id) + "?attachments=true")
-      self.class.inflate_object(Yajl::Parser.parse(rest_res, :symbolize_keys => true))
+
+      doc = Yajl::Parser.parse(rest_res, :symbolize_keys => true)
+      doc_attachments = Hash.new
+
+      # Handle attachments, which will be base64-encoded.
+      if doc[:_attachments]
+        doc[:_attachments].keys.each do |attachment_name|
+          attachment_base64 = doc[:_attachments][attachment_name][:data]
+          doc_attachments[attachment_name] = Base64.decode64(attachment_base64)
+        end
+        doc.delete(:_attachments)
+      end
+
+      self.class.inflate_object(doc, doc_attachments)
     rescue Exception => e
       raise CouchDBAngry.new(e)
     end
@@ -106,7 +120,6 @@ module Opscode::Persistor
       # Try to query the view. If that fails with 404, try to create
       # the view and fetch it again. If that fails, puke.
       begin
-        #puts "view_url = #{view_url}"
         rest_res = RestClient.get(view_url)
       rescue RestClient::ResourceNotFound => rnfx
         design_doc = self.class.get_design_doc
@@ -125,6 +138,7 @@ module Opscode::Persistor
       rows = rest_res[:rows]
       rows.map! do |row|
         doc = row[:doc]
+        doc_attachments = Hash.new
 
         # Unfortunately the couch view API doesn't allow
         # 'attachments=true', so we have to walk the attachments
@@ -133,11 +147,13 @@ module Opscode::Persistor
         if doc[:_attachments]
           doc[:_attachments].each_key do |attachment_key|
             attachment_url = "#{db_url}/#{doc[:_id]}/#{attachment_key}"
+
+            # attachment_data will not be base64-encoded.
             attachment_data = RestClient.get(attachment_url)
-            doc[:_attachments][attachment_key][:data] = attachment_data
+            doc_attachments[attachment_key] = attachment_data
           end
         end
-        self.class.inflate_object(doc)
+        self.class.inflate_object(doc, doc_attachments)
       end
       rows
     end
@@ -153,8 +169,10 @@ module Opscode::Persistor
       end
     end
 
-    # Gets passed a hash table with symbols as keys.
-    def self.inflate_object(data)
+    # - data is the object itself, a hash table with symbols as keys.
+    # - attachments is any attachments associated with the document,
+    #   a hash table with symbols as keys.
+    def self.inflate_object(data, attachments)
       raise "#{self.name}\#inflate_object must be defined!"
     end
 

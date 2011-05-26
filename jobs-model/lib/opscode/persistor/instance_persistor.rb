@@ -25,12 +25,9 @@ module Opscode::Persistor
     EOD
 
     # This method is passed a hash with symbols as keys!
-    def self.inflate_object(data)
+    def self.inflate_object(data, attachments)
       res = Opscode::Instance.new(data)
-
-      if data[:_attachments] && data[:_attachments][:chef_log]
-        res.from_log(Base64.decode64(data[:_attachments][:chef_log][:data]))
-      end
+      res.from_log(attachments[:chef_log])
       res
     end
 

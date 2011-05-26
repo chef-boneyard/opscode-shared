@@ -27,7 +27,7 @@ module Opscode::Persistor
 }
     EOD
 
-    def self.inflate_object(data)
+    def self.inflate_object(data, attachments)
       # TODO: move to Job#from_hash
       job_spec = data
       job_spec[:tasks].map! {|t| Opscode::Task.new(t)}

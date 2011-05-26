@@ -66,6 +66,7 @@ DANCANTDEFEND
 
     def to_hash
       {
+        :_id                  =>  @db_id,
         :instance_id          =>  @instance_id,
         :public_ipaddress     =>  @public_ipaddress,
         :public_hostname      =>  @public_hostname,
@@ -74,8 +75,8 @@ DANCANTDEFEND
         :cloud_objects        =>  @cloud_objects,
         :node_name            =>  @node_name,
         :client_name          =>  @client_name,
-        :_id                  =>  @db_id,
-        :job_id               =>  @job_id
+        :job_id               =>  @job_id,
+        :chef_log             =>  @chef_log
       }
     end
 
@@ -140,6 +141,7 @@ DANCANTDEFEND
       @cloud_objects        = attr_hash[:cloud_objects]
       @node_name            = attr_hash[:node_name]
       @client_name          = attr_hash[:client_name]
+      @chef_log             = attr_hash[:chef_log]
       @job_id               = attr_hash[:job_id]
       @db_id                = attr_hash[:_id] # couch_specific
       self

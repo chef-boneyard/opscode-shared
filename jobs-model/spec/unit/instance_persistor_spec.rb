@@ -61,13 +61,13 @@ describe InstancePersistor do
     instance2 = Instance.new(@instance.to_hash.merge(:_id => "instance-job-fetch-2", :job_id => "job-fetch-2"))
     @instance_persistor.save(instance2)
 
-    jobs1 = @instance_persistor.find_by_job_id('job-fetch-1')
-    jobs1.length.should == 1
-    jobs1.first.should == instance1
+    instances1 = @instance_persistor.find_by_job_id('job-fetch-1')
+    instances1.length.should == 1
+    instances1.first.should == instance1
 
-    jobs2 = @instance_persistor.find_by_job_id('job-fetch-2')
-    jobs2.length.should == 1
-    jobs2.first.should == instance2
+    instances2 = @instance_persistor.find_by_job_id('job-fetch-2')
+    instances2.length.should == 1
+    instances2.first.should == instance2
   end
 
   it "can fetch documents by instance_id: #find_by_instance_id positive" do
