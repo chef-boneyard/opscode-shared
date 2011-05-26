@@ -3,124 +3,168 @@ require 'chef/api_client'
 require 'chef/node'
 require 'couchrest'
 
-SecurityGroup = Struct.new(:name, :description, :ip_permissions, :owner_id)
-KeyPair = Struct.new(:name, :fingerprint, :private_key)
-Server = Struct.new(:id,
-                    :availability_zone,
-                    :dns_name,
-                    :groups,
-                    :flavor_id,
-                    :image_id,
-                    :created_at,
-                    :private_dns_name,
-                    :private_ip_address,
-                    :public_ip_address )
 
 describe Instance do
-  before do
-    @security_group = SecurityGroup.new("example-sg", 'Example SG for rspec', nil, nil)
-    @key_pair = KeyPair.new("skynet-governator-qs-12345-kp", "b9:c1:74:30:96:29:91:1c:7f:1a:54:14:2a:c2:e7:1c:00:1c:c9:fd",
-                            "--begin blah blah blah end---")
-    @server = Server.new("i-42",
-                         "us-east-1c",
-                         "ec2-123-45-67-89.compute-1.amazonaws.com",
-                         ["skynet-governator-qs-12345-sg"],
-                         "m1.small",
-                         "ami-12345",
-                         "2011-05-10 20:15:47 UTC",
-                         "domU-98.76.54.32.compute-1.internal",
-                         "98.76.54.32",
-                         "123.45.67.89")
 
-    @api_client = Chef::ApiClient.new.tap {|c| c.name("i-42")}
+  before(:each) do
+    UUIDTools::UUID.stub!(:random_create) { "UUID-UUID" }
+  end
 
-    @node = Chef::Node.new.tap {|n| n.name("i-42") }
+  describe "when initialized with nothing" do
+    before(:each) do
+      @instance = Instance.new
+    end
 
+    it "has an id" do
+      @instance.db_id.should == "instance-UUID-UUID"
+    end
+
+    it "has an empty hash of cloud objects" do
+      @instance.cloud_objects.should == {}
+    end
   end
 
   shared_examples_for "a fully created instance object" do
-
-    it "stores the security group created for the instance" do
-      @instance.security_group_name.should == 'example-sg'
+    it "has a database id" do
+      @instance.db_id.should == 'instance-ID'
     end
 
-    it "stores the name of the keypair created for the instance" do
-      @instance.key_pair_name.should == 'skynet-governator-qs-12345-kp'
+    it "has a job id" do
+      @instance.job_id.should == 'job-ID'
     end
 
-    it "stores the Chef ApiClient name" do
-      @instance.api_client_name.should == 'i-42'
+    it "has a cloud instance id" do
+      @instance.instance_id.should == 'i-42'
     end
 
-    it "stores the Chef Node name" do
+    it "has a public ip address" do
+      @instance.public_ipaddress.should == '1.2.3.4'
+    end
+
+    it "has a public hostname" do
+      @instance.public_hostname.should == '1-2-3-4.dns.com'
+    end
+
+    it "has a creation time" do
+      @instance.created_at.should == 'A long time ago'
+    end
+
+    it "has a chef log" do
+      @instance.chef_log.should == 'I am a log'
+    end
+
+    it "specifies a cloud provider" do
+      @instance.cloud_provider.should == 'AWS'
+    end
+
+    it "has cloud-provider-specific objects" do
+      @instance.cloud_objects.should == {
+        :security_group => 'sg-id',
+        :key_pair => 'kp-id'
+      }
+    end
+
+    it "has a node name" do
       @instance.node_name.should == 'i-42'
     end
 
-    it "stores the job_id" do
-      @instance.job_id.should == 'job-1234'
-    end
-
-    it "stores the EC2 instance data" do
-      @instance.instance_id.should == 'i-42'
-      @instance.public_hostname.should == 'ec2-123-45-67-89.compute-1.amazonaws.com'
-      @instance.public_ipaddress.should == '123.45.67.89'
-      @instance.created_at.should == '2011-05-10 20:15:47 UTC'
-    end
-
-    it "stores the bootstrap log" do
-      @instance.chef_log.should == "built yer infrastructure yo."
-    end
-
-    it "converts to a hash including all attributes" do
-      @instance.to_hash.should == {
-        :security_group_name => 'example-sg',
-        :key_pair_name => 'skynet-governator-qs-12345-kp',
-        :api_client_name => 'i-42',
-        :node_name => 'i-42',
-        :instance_id => 'i-42',
-        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        :public_ipaddress => '123.45.67.89',
-        :created_at => '2011-05-10 20:15:47 UTC',
-        :job_id => 'job-1234',
-        # don't know what _id is until it's created
-        :_id => @instance.db_id
-      }
+    it "has a chef client name" do
+      @instance.client_name.should == 'i-42'
     end
   end
 
-  describe "when created with a block" do
-    before do
+  describe "when initialized with a hash" do
+    before(:each) do
+      @inst_data = {
+        :_id => 'instance-ID',
+        :job_id => 'job-ID',
+        :instance_id => 'i-42',
+        :public_ipaddress => '1.2.3.4',
+        :public_hostname => '1-2-3-4.dns.com',
+        :created_at => 'A long time ago',
+        :chef_log => 'I am a log',
+        :cloud_provider => 'AWS',
+        :cloud_objects => {
+          :security_group => 'sg-id',
+          :key_pair => 'kp-id'
+        },
+        :node_name => 'i-42',
+        :client_name => 'i-42'
+      }
+      @instance = Instance.new(@inst_data)
+    end
+    
+    it_behaves_like "a fully created instance object"
+  end
+
+  describe "when initialized with a block" do
+    before(:each) do
+      server_mocks = {
+        :id => 'i-42',
+        :public_ip_address => '1.2.3.4',
+        :dns_name => '1-2-3-4.dns.com',
+        :created_at => 'A long time ago'
+      }
+      server = mock('cloud-server', server_mocks)
+
+      cloud_objects = {
+        :key_pair => 'kp-id',
+        :security_group => 'sg-id'
+      }
+
       @instance = Instance.new do |i|
-        i.from_security_group @security_group
-        i.from_key_pair @key_pair
-        i.from_cloud_server @server
-        i.from_api_client @api_client
-        i.from_node @node
-        i.from_log 'built yer infrastructure yo.'
-        i.from_job_id 'job-1234'
+        i.from_db_id('instance-ID')
+        i.from_job_id('job-ID')
+        i.from_cloud_server(server)
+        i.from_log('I am a log')
+        i.from_cloud_provider('AWS')
+        i.from_cloud_objects(cloud_objects)
+        i.from_node_name('i-42')
+        i.from_client_name('i-42')
       end
     end
 
     it_behaves_like "a fully created instance object"
   end
 
-  describe "when created with an attribute hash" do
-    before do
-      @instance = Instance.new({
-        :security_group_name => 'example-sg',
-        :key_pair_name => 'skynet-governator-qs-12345-kp',
-        :api_client_name => 'i-42',
-        :node_name => 'i-42',
-        :instance_id => 'i-42',
-        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        :public_ipaddress => '123.45.67.89',
-        :created_at => '2011-05-10 20:15:47 UTC',
-        :chef_log => 'built yer infrastructure yo.',
-        :job_id => 'job-1234'
-      })
+  describe "when initialized" do
+    before(:each) do
+      @instance = Instance.new
     end
 
-    it_behaves_like "a fully created instance object"
+    it "loads cloud server data from AWS servers" do
+      mocks = {
+        :id => 'i-42',
+        :public_ip_address => '1.2.3.4',
+        :dns_name => '1-2-3-4.dns.com',
+        :created_at => 'Time to kill',
+      }
+      server = mock('aws-server', mocks)
+      @instance.from_cloud_server(server)
+      @instance.instance_id.should == 'i-42'
+      @instance.public_ipaddress.should == '1.2.3.4'
+      @instance.public_hostname.should == '1-2-3-4.dns.com'
+      @instance.created_at.should == 'Time to kill'
+    end
+
+    it "loads cloud server data from Rackspace servers" do
+      Time.stub!(:now) { 10101010 }
+      mocks = {
+        :id => 12345,
+        :public_ip_address => '1.2.3.4'
+      }
+      server = mock('rs-server', mocks)
+      @instance.from_cloud_server(server)
+      @instance.instance_id.should == '12345'
+      @instance.public_ipaddress.should == '1.2.3.4'
+      @instance.public_hostname.should == '1.2.3.4'
+      @instance.created_at.should == '10101010'
+    end
+
+    it "lets you set cloud objects at will" do
+      @instance.cloud_objects[:pie_in_the_sky] = "yummy"
+      @instance.cloud_objects[:pie_in_the_sky].should == "yummy"
+    end
   end
 
   describe "persistence" do
@@ -130,29 +174,37 @@ describe Instance do
       @instance_persistor = InstancePersistor.new("http://localhost:5984/instance_spec")
 
       @instance = Instance.new({
-        :security_group_name => 'example-sg',
-        :key_pair_name => 'skynet-governator-qs-12345-kp',
-        :api_client_name => 'i-42',
-        :node_name => 'i-42',
+        :_id => 'instance-ID',
+        :job_id => 'job-ID',
         :instance_id => 'i-42',
-        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        :public_ipaddress => '123.45.67.89',
-        :created_at => '2011-05-10 20:15:47 UTC',
-        :chef_log => 'built yer infrastructure yo.',
-        :job_id => 'job-1234'
+        :public_ipaddress => '1.2.3.4',
+        :public_hostname => '1-2-3-4.dns.com',
+        :created_at => 'A long time ago',
+        :chef_log => 'I am a log',
+        :cloud_provider => 'AWS',
+        :cloud_objects => {
+          :security_group => 'sg-id',
+          :key_pair => 'kp-id'
+        },
+        :node_name => 'i-42',
+        :client_name => 'i-42'
       })
 
       @instance2 = Instance.new({
-        :security_group_name => 'example-sg',
-        :key_pair_name => 'skynet-governator-qs-12345-kp',
-        :api_client_name => 'i-42',
-        :node_name => 'i-42',
-        :instance_id => 'i-42',
-        :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-        :public_ipaddress => '123.45.67.89',
-        :created_at => '2011-05-10 20:15:47 UTC',
-        :chef_log => 'built yer infrastructure yo.',
-        :job_id => 'job-2345'
+        :_id => 'instance-ID2',
+        :job_id => 'job-ID2',
+        :instance_id => 'i-43',
+        :public_ipaddress => '1.2.3.5',
+        :public_hostname => '1-2-3-5.dns.com',
+        :created_at => 'A longer time ago',
+        :chef_log => 'I am a longer log',
+        :cloud_provider => 'AWS',
+        :cloud_objects => {
+          :security_group => 'sg-id2',
+          :key_pair => 'kp-id2'
+        },
+        :node_name => 'i-43',
+        :client_name => 'i-43'
       })
     end
 

@@ -12,13 +12,13 @@ module Opscode::Persistor
   "views":
   {
     "all": {
-      "map": "function(doc) { if (doc.type == 'instance') emit(doc.id, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc._id, doc._id) }"
     },
     "by_job_id": {
-      "map": "function(doc) { if (doc.type == 'instance') emit(doc.job_id, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc.job_id, doc._id) }"
     },
     "by_instance_id": {
-      "map": "function(doc) { if (doc.type == 'instance') emit(doc.instance_id, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'instance') emit(doc.instance_id, doc._id) }"
     }
   }
 }
@@ -29,7 +29,7 @@ module Opscode::Persistor
       res = Opscode::Instance.new(data)
 
       if data[:_attachments] && data[:_attachments][:chef_log]
-        res.chef_log = Base64.decode64(data[:_attachments][:chef_log][:data])
+        res.from_log(Base64.decode64(data[:_attachments][:chef_log][:data]))
       end
       res
     end
