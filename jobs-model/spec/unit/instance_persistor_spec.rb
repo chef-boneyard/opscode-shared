@@ -7,29 +7,37 @@ describe InstancePersistor do
     @instance_persistor = InstancePersistor.new("http://localhost:5984/instance_spec")
 
     @instance = Instance.new({
-                               :security_group_name => 'example-sg',
-                               :key_pair_name => 'skynet-governator-qs-12345-kp',
-                               :api_client_name => 'i-42',
-                               :node_name => 'i-42',
+                               :_id => 'instance-ID',
+                               :job_id => 'job-ID',
                                :instance_id => 'i-42',
-                               :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-                               :public_ipaddress => '123.45.67.89',
-                               :created_at => '2011-05-10 20:15:47 UTC',
-                               :chef_log => 'built yer infrastructure yo.',
-                               :job_id => 'job-1234'
+                               :public_ipaddress => '1.2.3.4',
+                               :public_hostname => '1-2-3-4.dns.com',
+                               :created_at => 'A long time ago',
+                               :chef_log => 'I am a log',
+                               :cloud_provider => 'AWS',
+                               :cloud_objects => {
+                                 :security_group => 'sg-id',
+                                 :key_pair => 'kp-id'
+                               },
+                               :node_name => 'i-42',
+                               :client_name => 'i-42'
                              })
 
     @instance2 = Instance.new({
-                                :security_group_name => 'example-sg',
-                                :key_pair_name => 'skynet-governator-qs-12345-kp',
-                                :api_client_name => 'i-42',
-                                :node_name => 'i-42',
-                                :instance_id => 'i-42',
-                                :public_hostname => 'ec2-123-45-67-89.compute-1.amazonaws.com',
-                                :public_ipaddress => '123.45.67.89',
-                                :created_at => '2011-05-10 20:15:47 UTC',
-                                :chef_log => 'built yer infrastructure yo.',
-                                :job_id => 'job-2345'
+                                :_id => 'instance-ID2',
+                                :job_id => 'job-ID2',
+                                :instance_id => 'i-43',
+                                :public_ipaddress => '1.2.3.5',
+                                :public_hostname => '1-2-3-5.dns.com',
+                                :created_at => 'A longer time ago',
+                                :chef_log => 'I am a longer log',
+                                :cloud_provider => 'AWS',
+                                :cloud_objects => {
+                                  :security_group => 'sg-id2',
+                                  :key_pair => 'kp-id2'
+                                },
+                                :node_name => 'i-43',
+                                :client_name => 'i-43'
                               })
   end
 
