@@ -4,15 +4,7 @@ require 'uuidtools'
 
 describe JobPersistor do
   before(:all) do
-    begin
-      RestClient.delete('http://localhost:5984/jobs_spec')
-    rescue RestClient::ResourceNotFound
-    end
-
-    begin
-      RestClient.put('http://localhost:5984/jobs_spec', "FUUUUU")
-    rescue RestClient::PreconditionFailed
-    end
+    recreate_db('http://localhost:5984/jobs_spec')
   end
 
   before do

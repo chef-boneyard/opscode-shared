@@ -85,7 +85,17 @@ module Opscode::Persistor
       @design_doc = design_doc
     end
 
-    # TODO: revisit exceptions. should only throw CouchDBAngry.
+    # Runs the named view with the named key and returns a list of
+    # rows matching.
+    #
+    # Parameters:
+    #   view_name: one of the views defined in set_design_doc
+    #   key: string key or nil if no key to be passed
+    #
+    # Returns:
+    #   Array of matching rows, which may be empty.
+    #
+    # TODO: revisit exceptions. Should only throw CouchDBAngry.
     def execute_view(view_name, key)
       design_url = "#{db_url}/_design/#{self.class.name}"
       view_url = "#{design_url}/_view/#{view_name}?include_docs=true"
@@ -130,6 +140,17 @@ module Opscode::Persistor
         self.class.inflate_object(doc)
       end
       rows
+    end
+
+    # Like #execute_view(view_name, key), but returns the first item
+    # returned from the view, or nil if the list was empty.
+    def execute_view_single(view_name, key)
+      res = execute_view(view_name, key)
+      if res.empty?
+        nil
+      else
+        res.first
+      end
     end
 
     # Gets passed a hash table with symbols as keys.

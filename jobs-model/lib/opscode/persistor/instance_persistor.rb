@@ -34,16 +34,20 @@ module Opscode::Persistor
       res
     end
 
+    # Returns an array of instances with the given job_id.
     def find_by_job_id(job_id)
       execute_view("by_job_id", job_id)
     end
 
+    # Returns all instances in the database.
     def find_all()
       execute_view("all", nil)
     end
 
+    # Returns a single Instance document with the given instance_id, or
+    # nil.
     def find_by_instance_id(instance_id)
-      execute_view("by_instance_id", instance_id)
+      execute_view_single("by_instance_id", instance_id)
     end
 
     def save(instance)
