@@ -15,6 +15,7 @@ module Opscode
     attr_accessor :orgdb
     attr_accessor :cloud_credentials
     attr_accessor :status
+    attr_accessor :status_details
 
     # TODO tim 2011-5-11: "id" instead of job_id/task_id?
     # TODO tim 2011-5-19: move into from_hash, consolidate.
@@ -29,6 +30,7 @@ module Opscode
       @orgname = hash[:orgname]
       @orgdb = hash[:orgdb]
       @status = hash[:status]
+      @status_details = hash[:status_details]
       @values = hash[:values] || {}
 
       # TODO tim 2011-5-11: duck-typing for these checks?
@@ -57,6 +59,7 @@ module Opscode
         orgname == rhs.orgname &&
         orgdb == rhs.orgdb &&
         status == rhs.status &&
+        status_details == rhs.status_details &&
         values == rhs.values
     end
 
@@ -90,6 +93,7 @@ module Opscode
               :orgname => hash['orgname'],
               :orgdb => hash['orgdb'],
               :status => hash['status'],
+              :status_details => hash['status_details'],
               :values => hash['values'])
     end
 
@@ -108,6 +112,7 @@ module Opscode
         "orgname" => orgname,
         "orgdb" => orgdb,
         "status" => status,
+        "status_details" => status_details,
         "values" => values,
       }
     end
