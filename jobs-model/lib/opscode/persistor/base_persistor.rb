@@ -114,13 +114,18 @@ module Opscode::Persistor
     #   options: a ::Hash of options to pass to CouchDB
     #     * include_docs      - tell CouchDB to include the
     #                           documents in the response
-    #     * fetch_attachments - fetch attachments for docs
     #
     # Returns:
     #   Array of matching rows, which may be empty.
     #
     # TODO: revisit exceptions. Should only throw CouchDBAngry.
     def execute_view(view_name, key, options={})
+      default_options = {
+        "include_docs" => true
+      }
+
+      options = default_options.merge(options)
+
       design_url = "#{db_url}/_design/#{self.class.name}"
       view_url = "#{design_url}/_view/#{view_name}"
 
@@ -131,7 +136,7 @@ module Opscode::Persistor
                          options["key"] = key
                          [:get, []]
                        elsif key.is_a?(Array) # bulk view
-                         [:post, [{:keys => key}]]
+                         [:post, [{:keys => key}.to_json]]
                        else                   # all the docs in a view
                          [:get, []]
                        end
@@ -156,32 +161,17 @@ module Opscode::Persistor
                    end
                  end
 
-      # Parse the response from above, and walk over each row,
-      # inflating them.
       rest_res = Yajl::Parser.parse(rest_res, :symbolize_keys => true)
       rows = rest_res[:rows]
-      rows.map! do |row|
-        doc = row[:doc]
 
-        # TODO: DON'T LOAD ATTACHMENTS HERE....
-
-        doc_attachments = Hash.new
-
-        # Unfortunately the couch view API doesn't allow
-        # 'attachments=true', so we have to walk the attachments
-        # manually when they come back from a view. Prepare them in
-        # the format that inflate_object will expect.
-        if doc[:_attachments]
-          doc[:_attachments].each_key do |attachment_key|
-            attachment_url = "#{db_url}/#{doc[:_id]}/#{attachment_key}"
-
-            # attachment_data will not be base64-encoded.
-            attachment_data = RestClient.get(attachment_url)
-            doc_attachments[attachment_key] = attachment_data
-          end
+      # if include_docs = true, inflate the rows
+      if options["include_docs"]
+        rows.map! do |row|
+          doc = row[:doc]
+          self.class.inflate_object(doc)
         end
-        self.class.inflate_object(doc, doc_attachments)
       end
+
       rows
     end
 
@@ -197,9 +187,7 @@ module Opscode::Persistor
     end
 
     # - data is the object itself, a hash table with symbols as keys.
-    # - attachments is any attachments associated with the document,
-    #   a hash table with symbols as keys.
-    def self.inflate_object(data, attachments)
+    def self.inflate_object(data)
       raise "#{self.name}\#inflate_object must be defined!"
     end
 
