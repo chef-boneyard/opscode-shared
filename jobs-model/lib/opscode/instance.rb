@@ -56,6 +56,9 @@ DANCANTDEFEND
     def to_json(*args)
       data = to_hash
       data['json_class'] = self.class.name
+      if data[:chef_log]
+        data[:chef_log] = data[:chef_log].force_encoding("UTF-8")
+      end
       data.to_json(*args)
     end
 
