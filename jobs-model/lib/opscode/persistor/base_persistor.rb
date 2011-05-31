@@ -107,33 +107,54 @@ module Opscode::Persistor
     #
     # Parameters:
     #   view_name: one of the views defined in set_design_doc
-    #   key: string key or nil if no key to be passed
+    #   key:
+    #     * ::String - key to get
+    #     * ::Array  - array of keys for a bulk view
+    #     * ::nil    - no key - all docs in view
+    #   options: a ::Hash of options to pass to CouchDB
+    #     * include_docs      - tell CouchDB to include the
+    #                           documents in the response
+    #     * fetch_attachments - fetch attachments for docs
     #
     # Returns:
     #   Array of matching rows, which may be empty.
     #
     # TODO: revisit exceptions. Should only throw CouchDBAngry.
-    def execute_view(view_name, key)
+    def execute_view(view_name, key, options={})
       design_url = "#{db_url}/_design/#{self.class.name}"
-      view_url = "#{design_url}/_view/#{view_name}?include_docs=true"
-      if key
-        view_url += "&key=#{URI.encode(key.to_json)}"
-      end
+      view_url = "#{design_url}/_view/#{view_name}"
+
+      # TODO: make include_docs an option
+      options["include_docs"] = true
+
+      method, params = if key.is_a?(String)   # get one key
+                         options["key"] = key
+                         [:get, []]
+                       elsif key.is_a?(Array) # bulk view
+                         [:post, [{:keys => key}]]
+                       else                   # all the docs in a view
+                         [:get, []]
+                       end
+
+      view_url << "?" if options.length != 0
+      view_url << options.map { |k,v| "#{k}=#{URI.escape(v.to_json)}"}.join('&')
+
+      resource = RestClient::Resource.new(view_url)
 
       # Try to query the view. If that fails with 404, try to create
       # the view and fetch it again. If that fails, puke.
-      begin
-        rest_res = RestClient.get(view_url)
-      rescue RestClient::ResourceNotFound => rnfx
-        design_doc = self.class.get_design_doc
-        RestClient.put(design_url, design_doc)
+      rest_res = begin
+                   resource.send(method, *params)
+                 rescue RestClient::ResourceNotFound => rnfx
+                   design_doc = self.class.get_design_doc
+                   RestClient.put(design_url, design_doc)
 
-        begin
-          rest_res = RestClient.get(view_url)
-        rescue => e
-          raise CouchDBAngry.new(e)
-        end
-      end
+                   begin
+                     resource.send(method, *params)
+                   rescue => e
+                     raise CouchDBAngry.new(e)
+                   end
+                 end
 
       # Parse the response from above, and walk over each row,
       # inflating them.
@@ -141,6 +162,9 @@ module Opscode::Persistor
       rows = rest_res[:rows]
       rows.map! do |row|
         doc = row[:doc]
+
+        # TODO: DON'T LOAD ATTACHMENTS HERE....
+
         doc_attachments = Hash.new
 
         # Unfortunately the couch view API doesn't allow
