@@ -61,13 +61,19 @@ describe InstancePersistor do
     instance2 = Instance.new(@instance.to_hash.merge(:_id => "instance-job-fetch-2", :job_id => "job-fetch-2"))
     @instance_persistor.save(instance2)
 
+    # fetching documents by job_id doens't return the chef_log attachment, nor do we want it to
+    # this could be a more robust test by checking fields other than the instance_id and job_id
     instances1 = @instance_persistor.find_by_job_id('job-fetch-1')
     instances1.length.should == 1
-    instances1.first.should == instance1
+    inst = instances1.first
+    inst.instance_id.should == instance1.instance_id
+    inst.job_id.should == instance1.job_id
 
     instances2 = @instance_persistor.find_by_job_id('job-fetch-2')
     instances2.length.should == 1
-    instances2.first.should == instance2
+    inst = instances2.first
+    inst.instance_id.should == instance2.instance_id
+    inst.job_id.should == instance2.job_id
   end
 
   it "can fetch documents by instance_id: #find_by_instance_id positive" do

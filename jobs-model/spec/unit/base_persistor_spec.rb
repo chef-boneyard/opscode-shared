@@ -12,7 +12,7 @@ class TestPersistor < BasePersistor
 }
 EOF
 
-  def self.inflate_object(doc)
+  def self.inflate_object(doc, attachments)
     doc
   end
 

@@ -46,25 +46,34 @@ module Opscode::Persistor
       "#{db_url}/#{id}"
     end
 
-    # Find a document with the given document id, or return nil.
-    def find_by_id(obj_id)
-      # TODO: tim, 2011-5-18: always including attachments=true may be
-      # bad. revisit?
-      rest_res = RestClient.get(url(obj_id) + "?attachments=true")
+    # == find_by_id
+    # fetch a document by id
+    #
+    # Parameters:
+    #   obj_id:  the ID of the document in the database
+    #   options: a ::Hash of options to pass to CouchDB i.e.
+    #     * attachments    - fetch all attachments for the doc
+    #                        default: true
+    #
+    # Returns: An inflated object or nil (if not found)
+    def find_by_id(obj_id, options = {})
+      default_options = {
+        "attachments" => true
+      }
+
+      options = default_options.merge(options)
+
+      url = url(obj_id) << options_string(options)
+      rest_res = RestClient.get(url)
 
       doc = Yajl::Parser.parse(rest_res, :symbolize_keys => true)
-      doc_attachments = Hash.new
 
-      # Handle attachments, which will be base64-encoded.
-      if doc[:_attachments]
-        doc[:_attachments].keys.each do |attachment_name|
-          attachment_base64 = doc[:_attachments][attachment_name][:data]
-          doc_attachments[attachment_name] = Base64.decode64(attachment_base64)
-        end
+      if options["attachments"]
+        attachments = decode_attachments(doc[:_attachments])
         doc.delete(:_attachments)
       end
 
-      self.class.inflate_object(doc, doc_attachments)
+      self.class.inflate_object(doc, attachments)
     rescue RestClient::ResourceNotFound => rnf
       nil
     rescue Exception => e
@@ -114,6 +123,11 @@ module Opscode::Persistor
     #   options: a ::Hash of options to pass to CouchDB
     #     * include_docs      - tell CouchDB to include the
     #                           documents in the response
+    #                           default: true
+    #     * attachments       - include attachments in response.
+    #                           CouchDB doesn't support this, but
+    #                           specifying it lets the method know
+    #                           that we should fake it
     #
     # Returns:
     #   Array of matching rows, which may be empty.
@@ -141,8 +155,7 @@ module Opscode::Persistor
                          [:get, []]
                        end
 
-      view_url << "?" if options.length != 0
-      view_url << options.map { |k,v| "#{k}=#{URI.escape(v.to_json)}"}.join('&')
+      view_url << options_string(options)
 
       resource = RestClient::Resource.new(view_url)
 
@@ -168,7 +181,27 @@ module Opscode::Persistor
       if options["include_docs"]
         rows.map! do |row|
           doc = row[:doc]
-          self.class.inflate_object(doc)
+
+          # TODO: DON'T DO THIS!
+          # We shouldn't be doing this here.
+          #
+          # The only time we specify attachments=true to
+          # a view is when we fetch an instance by its
+          # cloud instance id. Let's not do that. Let's fetch
+          # individual instance by the unique id that we
+          # create for them so that we can use the built-in
+          # attachments=true ability of CouchDB
+          # Anyways... here goes nothing
+          # [stephen 6/1/11]
+          if options["attachments"] && doc[:_attachments]
+            attachments = doc[:_attachments].inject({}) do |res, (key, value)|
+              attachment_url = "#{db_url}/#{doc[:_id]}/#{key}"
+              res[key] = RestClient.get(attachment_url) # response is not base64 encoded
+              res
+            end
+          end
+
+          self.class.inflate_object(doc, attachments)
         end
       end
 
@@ -177,8 +210,8 @@ module Opscode::Persistor
 
     # Like #execute_view(view_name, key), but returns the first item
     # returned from the view, or nil if the list was empty.
-    def execute_view_single(view_name, key)
-      res = execute_view(view_name, key)
+    def execute_view_single(view_name, key, options={})
+      res = execute_view(view_name, key, options)
       if res.empty?
         nil
       else
@@ -187,8 +220,27 @@ module Opscode::Persistor
     end
 
     # - data is the object itself, a hash table with symbols as keys.
-    def self.inflate_object(data)
+    def self.inflate_object(data, attachments)
       raise "#{self.name}\#inflate_object must be defined!"
+    end
+
+    private
+
+    def options_string(options)
+      s = ""
+      s << "?" if options.length != 0
+      s << options.map { |k,v| "#{k}=#{URI.escape(v.to_json)}"}.join('&')
+    end
+
+    def decode_attachments(attachments)
+      if attachments
+        attachments.inject({}) do |res, (name, value)|
+          res[name] = Base64.decode64(value[:data])
+          res
+        end
+      else
+        Hash.new
+      end
     end
 
   end

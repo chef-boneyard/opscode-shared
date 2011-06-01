@@ -27,7 +27,9 @@ module Opscode::Persistor
     # This method is passed a hash with symbols as keys!
     def self.inflate_object(data, attachments)
       res = Opscode::Instance.new(data)
-      res.from_log(attachments[:chef_log])
+      if attachments
+        res.from_log(attachments[:chef_log])
+      end
       res
     end
 
@@ -43,8 +45,10 @@ module Opscode::Persistor
 
     # Returns a single Instance document with the given instance_id, or
     # nil.
+    #
+    # Populates the attachments as well
     def find_by_instance_id(instance_id)
-      execute_view_single("by_instance_id", instance_id)
+      execute_view_single("by_instance_id", instance_id, "attachments" => true)
     end
 
     def save(instance)
