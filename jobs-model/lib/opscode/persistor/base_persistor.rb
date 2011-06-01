@@ -46,6 +46,7 @@ module Opscode::Persistor
       "#{db_url}/#{id}"
     end
 
+    # Find a document with the given document id, or return nil.
     def find_by_id(obj_id)
       # TODO: tim, 2011-5-18: always including attachments=true may be
       # bad. revisit?
@@ -64,6 +65,8 @@ module Opscode::Persistor
       end
 
       self.class.inflate_object(doc, doc_attachments)
+    rescue RestClient::ResourceNotFound => rnf
+      nil
     rescue Exception => e
       raise CouchDBAngry.new(e)
     end

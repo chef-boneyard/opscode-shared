@@ -60,6 +60,10 @@ describe JobPersistor do
       @persistor.find_by_id(@job.job_id).should == @job
     end
 
+    it "find_by_id returns nil for a job docid that doesn't exist" do
+      @persistor.find_by_id("nonexist").should == nil
+    end
+
     it "can find a job by orgname" do
       # save a different job with a different orgname so we're sure
       # there's just one.
