@@ -18,10 +18,10 @@ module Opscode::Persistor
   "views":
   {
     "all": {
-      "map": "function(doc) { if (doc.type == 'job') emit(doc.id, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'job') emit(doc._id, doc._id) }"
     },
     "by_orgname": {
-      "map": "function(doc) { if (doc.type == 'job') emit(doc.orgname, doc.id) }"
+      "map": "function(doc) { if (doc.type == 'job') emit(doc.orgname, doc._id) }"
     }
   }
 }
