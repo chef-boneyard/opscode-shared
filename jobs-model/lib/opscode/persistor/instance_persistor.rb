@@ -52,6 +52,7 @@ module Opscode::Persistor
       # then we can include it in the attachment upload, since it's
       # required.
       hash = instance.to_hash.merge(:type => "instance")
+      hash.delete(:chef_log)
       db_rev = force_save(instance.db_id, hash)
 
       if instance.chef_log

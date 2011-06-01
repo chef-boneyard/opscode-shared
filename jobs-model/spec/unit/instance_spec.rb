@@ -2,6 +2,7 @@ require File.expand_path('../../spec_helper', __FILE__)
 require 'chef/api_client'
 require 'chef/node'
 require 'couchrest'
+require 'base64'
 
 
 describe Instance do
@@ -82,7 +83,7 @@ describe Instance do
         :public_ipaddress => '1.2.3.4',
         :public_hostname => '1-2-3-4.dns.com',
         :created_at => 'A long time ago',
-        :chef_log => 'I am a log',
+        :chef_log => Base64.encode64('I am a log'),
         :cloud_provider => 'AWS',
         :cloud_objects => {
           :security_group => 'sg-id',

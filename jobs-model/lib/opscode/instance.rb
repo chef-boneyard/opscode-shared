@@ -1,5 +1,6 @@
 require 'uuidtools'
 require 'pp'
+require 'base64'
 
 module Opscode
   class Instance
@@ -56,9 +57,6 @@ DANCANTDEFEND
     def to_json(*args)
       data = to_hash
       data['json_class'] = self.class.name
-      if data[:chef_log]
-        data[:chef_log] = data[:chef_log].force_encoding("UTF-8")
-      end
       data.to_json(*args)
     end
 
@@ -79,7 +77,7 @@ DANCANTDEFEND
         :node_name            =>  @node_name,
         :client_name          =>  @client_name,
         :job_id               =>  @job_id,
-        :chef_log             =>  @chef_log
+        :chef_log             =>  @chef_log.nil? ? nil : Base64.encode64(@chef_log)
       }
     end
 
@@ -144,7 +142,7 @@ DANCANTDEFEND
       @cloud_objects        = attr_hash[:cloud_objects]
       @node_name            = attr_hash[:node_name]
       @client_name          = attr_hash[:client_name]
-      @chef_log             = attr_hash[:chef_log]
+      @chef_log             = attr_hash[:chef_log].nil? ? nil : Base64.decode64(attr_hash[:chef_log])
       @job_id               = attr_hash[:job_id]
       @db_id                = attr_hash[:_id] # couch_specific
       self
