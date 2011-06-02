@@ -1,4 +1,5 @@
 require 'opscode/instance'
+require 'opscode/persistor/base_persistor'
 require 'uri'
 require 'restclient'
 require 'yajl'

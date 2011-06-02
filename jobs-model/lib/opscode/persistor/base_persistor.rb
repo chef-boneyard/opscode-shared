@@ -150,7 +150,7 @@ module Opscode::Persistor
                          options["key"] = key
                          [:get, []]
                        elsif key.is_a?(Array) # bulk view
-                         [:post, [{:keys => key}.to_json]]
+                         [:post, [{:keys => key}.to_json, {"Content-Type" => "application/json"}]]
                        else                   # all the docs in a view
                          [:get, []]
                        end
