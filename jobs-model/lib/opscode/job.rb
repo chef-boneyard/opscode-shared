@@ -116,5 +116,10 @@ module Opscode
         "values" => values,
       }
     end
+
+    def status=(val)
+      self.updated!
+      @status = val
+    end
   end
 end
