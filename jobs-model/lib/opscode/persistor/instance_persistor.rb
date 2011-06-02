@@ -34,8 +34,9 @@ module Opscode::Persistor
     end
 
     # Returns an array of instances with the given job_id.
-    def find_by_job_id(job_id)
-      execute_view("by_job_id", job_id)
+    # returns attachments as well if attachments=true
+    def find_by_job_id(job_id, attachments=false)
+      execute_view("by_job_id", job_id, "attachments" => attachments)
     end
 
     # Returns all instances in the database.
