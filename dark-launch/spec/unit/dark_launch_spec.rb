@@ -78,6 +78,22 @@ EOM
       end
     end
 
+    describe "when orgname is nil" do
+      it "should return false for nil org and org-specific feature" do
+        Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
+        Opscode::DarkLaunch.is_feature_enabled?("feature1", nil).should == false
+      end
+
+      it "should return true for nil org and globally enabled feature" do
+        Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
+        Opscode::DarkLaunch.is_feature_enabled?("feature2", nil).should == true
+      end
+
+      it "should return false for nil org and globally disabled feature" do
+        Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
+        Opscode::DarkLaunch.is_feature_enabled?("feature3", nil).should == false
+      end
+    end
     it "should return false for an org which is not in a properly-formed config file" do
       Chef::Config[:dark_launch_config_filename] = @valid_config_file.path
       Opscode::DarkLaunch.is_feature_enabled?("feature1", "testorg_notthere").should == false

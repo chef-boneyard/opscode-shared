@@ -35,14 +35,21 @@ module Opscode
           Hash.new
         end
 
-      # !! to turn falsey values into real false
-      is_enabled = !!(@features_by_org[feature_name] &&
-                      @features_by_org[feature_name][orgname])
-      msg = ["DarkLaunch: #{feature_name}",
-             is_enabled ? "IS" : "is NOT",
+      feature_config = @features_by_org[feature_name]
+      is_enabled = case feature_config
+                   when TrueClass, FalseClass
+                     # feature is globally enabled/disabled
+                     feature_config
+                   when Hash
+                     (orgname && feature_config[orgname])
+                   else
+                     false
+                   end
+      msg = ["DarkLaunch: #{feature_name}", is_enabled ? "IS" : "is NOT",
              "for #{orgname}"].join(" ")
       Chef::Log.debug(msg)
-      is_enabled
+      # !! to turn falsey values into real false
+      !!is_enabled
     end
 
     # for testing
@@ -78,10 +85,7 @@ module Opscode
               result[feature_name][orgname] = true
             end
           when TrueClass, FalseClass
-            # convert to a hash with appropriate default value, in
-            # this case always true or alwasy false for any (not yet
-            # set key)
-            result[feature_name] = Hash.new { |h, k| h[k] = feature_config }
+            result[feature_name] = feature_config
           else
             raise exception_msg
           end
