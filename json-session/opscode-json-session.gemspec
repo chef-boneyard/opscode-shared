@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.email = "noah@opscode.com"
 
   s.add_dependency "rails"
+  s.add_dependency "yajl-ruby"
 
   s.require_path = 'lib'
   s.files = Dir.glob("{distro,lib}/**/*")
