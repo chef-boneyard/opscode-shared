@@ -10,6 +10,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "opscode-json-session"
   s.add_dependency "sequel"
+  s.add_dependency "mysql2"
 
   s.require_path = 'lib'
   s.files = Dir.glob("{distro,lib}/**/*")
