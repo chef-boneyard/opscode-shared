@@ -11,7 +11,7 @@ module Opscode
 
     def create_helpspot_user(email)
       portal_users = helpspot_db[:HS_Portal_Login]
-      portal_users.on_duplicate_key_update.insert(:sEmail => email, :sPassword => '')
+      portal_users.on_duplicate_key_update(:sPassword).insert(:sEmail => email, :sPassword => '')
       portal_users.select(:xLogin).where(:sEmail => email).first
     end
 
