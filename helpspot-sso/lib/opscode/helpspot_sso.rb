@@ -5,11 +5,11 @@ module Opscode
     DATABASE_URI = nil
 
     def helpspot_db
-      raise "No database configured" unless DATABASE_URI
       @helpspot_db ||= Sequel.connect(DATABASE_URI)
     end
 
     def create_helpspot_user(email)
+      return 0 unless DATABASE_URI
       portal_users = helpspot_db[:HS_Portal_Login]
       portal_users.on_duplicate_key_update(:sPassword).insert(:sEmail => email, :sPassword => '')
       portal_users.select(:xLogin).where(:sEmail => email).first
