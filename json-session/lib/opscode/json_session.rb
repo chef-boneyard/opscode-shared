@@ -2,17 +2,7 @@ require 'yajl'
 require 'set'
 
 module Opscode
-  begin
-    # Rails 3
-    require 'action_dispatch/middleware/flash'
-    flash_hash = ActionDispatch::Flash::FlashHash
-  rescue MissingSourceFile
-    # Rails 2
-    require 'action_controller/flash'
-    flash_hash = ActionController::Flash::FlashHash
-  end
-
-  class JSONFlashHash < flash_hash
+  module JSONFlashHashImpl
     def initialize(data)
       super()
       used_data = data.delete('used')
@@ -37,11 +27,9 @@ module Opscode
       self
     end
   end
-end
 
-# New message verifier that uses JSON for storage
-module ActiveSupport
-  class JSONMessageVerifier < MessageVerifier
+  # New message verifier that uses JSON for storage
+  class JSONMessageVerifier < ActiveSupport::MessageVerifier
     def verify(signed_message)
       raise InvalidSignature if signed_message.blank?
 
@@ -74,17 +62,5 @@ module ActiveSupport
       "#{data}--#{generate_digest(data)}"
     end
   end
-end
 
-# Register the new session backend
-module ActionController
-  module Session
-    # Bad camel-casing is required by Ruby
-    class JsonCookieStore < CookieStore
-      def verifier_for(secret, digest)
-        key = secret.respond_to?(:call) ? secret.call : secret
-        ActiveSupport::JSONMessageVerifier.new(key, digest)
-      end
-    end
-  end
 end
