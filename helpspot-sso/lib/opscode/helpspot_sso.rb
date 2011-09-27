@@ -18,7 +18,7 @@ module Opscode
     def create_helpspot_session(user)
       #login_username, login_sEmail, login_ip, and login_xLogin
       email = user.email
-      session[:login_username] = user.unique_name
+      session[:login_username] = user.responds_to?(:unique_name) ? user.unique_name : user.username
       session[:login_sEmail] = email
       session[:login_xLogin] = create_helpspot_user(email)
       session[:login_ip] = request.remote_ip
