@@ -52,8 +52,9 @@ module Opscode
     def generate(value)
       value = value.clone
       if value['flash']
-        value['flash'] = value['flash'].instance_variable_get(:@flashes) if value['flash'].instance_variable_get(:@flashes)
-        value['flash']['used'] = value['flash'].instance_variable_get(:@used) || {}
+        flash_data = value['flash']
+        value['flash'] = flash_data.instance_variable_get(:@flashes) if flash_data.instance_variable_get(:@flashes)
+        value['flash']['used'] = flash_data.instance_variable_get(:@used) || {}
         value['flash']['used'].delete 'used'
         if value['flash']['used'].is_a? Set
           value['flash']['used'] = value['flash']['used'].inject({}) {|memo, v| memo[v] = true; memo}
