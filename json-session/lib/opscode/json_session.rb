@@ -1,5 +1,6 @@
 require 'yajl'
 require 'set'
+require 'erb'
 
 module Opscode
   module JSONFlashHashImpl
@@ -7,7 +8,7 @@ module Opscode
       super()
       used_data = data.delete('used')
       # Force symbolic keys since that is the convention Rails uses
-      replace(data.symbolize_keys)
+      replace(data.inject({}){|memo, (k, v)| memo[k] = v.html_safe; memo}.symbolize_keys)
       # Repopulate the used data
       if used_data
         @used = used_data.inject(@used.class.new) do |memo, (k, v)|
@@ -58,6 +59,14 @@ module Opscode
         value['flash']['used'].delete 'used'
         if value['flash']['used'].is_a? Set
           value['flash']['used'] = value['flash']['used'].inject({}) {|memo, v| memo[v] = true; memo}
+        end
+        value['flash'] = value['flash'].inject({}) do |memo, (k, v)|
+          if k == 'used'
+            memo[k] = v
+          else
+            memo[k] = ERB::Util::html_escape(v)
+          end
+          memo
         end
       end
       data = ActiveSupport::Base64.encode64s(Yajl::Encoder.encode(value))
