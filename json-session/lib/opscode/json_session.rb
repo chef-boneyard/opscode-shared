@@ -43,7 +43,11 @@ module Opscode
           data['flash'] = Opscode::JSONFlashHash.new(data.delete(:flash)) if data[:flash]
           data
         else # Handle old Marshal.dump'd session
-          Marshal.load(str)
+          begin
+            Marshal.load(str)
+          rescue ArgumentError => e
+            Hash.new
+          end
         end
       else
         raise InvalidSignature
