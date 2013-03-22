@@ -11,14 +11,34 @@ module Opscode
     include Let
 
     included do
-      let(:x_darklaunch_features) { JSON.parse(x_darklaunch_headers) }
-      let(:x_darklaunch_headers)  { raw_headers[Opscode::X_DARKLAUNCH_HEADER] }
-      let(:raw_headers)           { request.env }
+      let(:x_darklaunch_features)      { Hash[*x_darklaunch_features_list.flatten] } # Array to Hash
+
+      # Ignore whitespace; delimit by ';', k1 = v1
+      let(:x_darklaunch_features_list) do
+        x_darklaunch_headers.gsub(/\s+/, '').
+          split(';').
+          map    { |x| x.split('=', 2) }.
+          reject { |x| x.length != 2 }
+      end
+
+      let(:x_darklaunch_headers)       { raw_headers[Opscode::X_DARKLAUNCH_HEADER] }
+      let(:raw_headers)                { request.env }
     end
 
     def x_darklaunch_enabled?(key)
       #Merb.logger.debug "Headers: #{request.env}"
-      x_darklaunch_features[key]
+      # Valid values are '1' or '0', which must be mapped
+      # to Ruby true or false
+      #
+
+      case x_darklaunch_features[key]
+      when '1' then true
+      when '0' then false
+      else
+        # Default to false for now until we decide what kind
+        # of error handling we want
+        false
+      end
     end
 
     # See if an org's objects of a particular type are stored in SQL (as
