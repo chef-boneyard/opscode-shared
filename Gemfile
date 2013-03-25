@@ -8,10 +8,7 @@ gem "rake"
 gem "rest-client", "~> 1.6.0"
 gem "json", '1.4.6'
 
-# Concern and Let
-gem "rlet", "~> 0.5.1"
-
-  # OPSCODE PATCHED GEMS
+# OPSCODE PATCHED GEMS
 gem "couchrest", :git => "git://github.com/opscode/couchrest.git"
 
 group(:integration_test) do

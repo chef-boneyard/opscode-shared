@@ -1,4 +1,4 @@
-require 'rlet'
+require 'opscode/let'
 require 'json'
 
 module Opscode
@@ -7,8 +7,8 @@ module Opscode
   # Include this module to extract Darklaunch feature flags from
   # X-Ops-Darklaunch
   module XDarkLaunch
-    extend Concern
-    include Let
+    extend Opscode::Concern
+    include Opscode::Let
 
     included do
       let(:x_darklaunch_features)      { Hash[*x_darklaunch_features_list.flatten] } # Array to Hash
