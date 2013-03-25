@@ -21,7 +21,7 @@ module Opscode
           reject { |x| x.length != 2 }
       end
 
-      let(:x_darklaunch_headers)       { raw_headers[Opscode::X_DARKLAUNCH_HEADER] }
+      let(:x_darklaunch_headers)       { raw_headers[Opscode::X_DARKLAUNCH_HEADER] || '' }
       let(:raw_headers)                { request.env }
     end
 

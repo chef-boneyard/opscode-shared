@@ -33,13 +33,14 @@ describe Opscode::XDarkLaunch do
       let(:feature) { 'key' }
 
       def self.should_not_raise_error_with(_encoded_features)
-        context "with '#{_encoded_features}'" do
+        context "with #{_encoded_features.inspect}" do
           let(:encoded_features) { _encoded_features }
           it { expect { subject }.to_not raise_error }
           it { controller.x_darklaunch_features.should be_a_kind_of(Hash) }
         end
       end
 
+      should_not_raise_error_with nil
       should_not_raise_error_with ''
       should_not_raise_error_with 'key='
       should_not_raise_error_with 'key=;'
