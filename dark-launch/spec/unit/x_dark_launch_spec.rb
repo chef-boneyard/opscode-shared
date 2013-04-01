@@ -26,7 +26,16 @@ describe Opscode::XDarkLaunch do
 
     when_feature_is 'enabled',  { feature => 1 }   { should be_true }
     when_feature_is 'disabled', { feature => 0 }   { should be_false }
-    when_feature_is 'nil',      { feature => nil } { should be_false }
+
+    context 'when feature is nil' do
+      let(:darklaunch_features) { { feature => nil } }
+      let(:darklaunch_fallback_response) { double('fallback_response') }
+
+      it 'should fallback to DarkLaunch' do
+        Opscode::DarkLaunch.should_receive(:is_feature_enabled?).with(feature, nil).and_return(darklaunch_fallback_response)
+        should be darklaunch_fallback_response
+      end
+    end
 
 
     context 'when X-Ops-Darklaunch is corrupted' do

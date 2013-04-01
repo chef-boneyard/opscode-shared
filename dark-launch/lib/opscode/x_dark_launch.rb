@@ -1,4 +1,5 @@
 require 'opscode/let'
+require 'opscode/dark_launch'
 require 'json'
 
 module Opscode
@@ -25,7 +26,8 @@ module Opscode
       let(:raw_headers)                { request.env }
     end
 
-    def x_darklaunch_enabled?(key)
+    # We need the orgname to pass to Opscode:DarkLaunch for a fallback
+    def x_darklaunch_enabled?(key, orgname = nil)
       #Merb.logger.debug "Headers: #{request.env}"
       # Valid values are '1' or '0', which must be mapped
       # to Ruby true or false
@@ -35,9 +37,8 @@ module Opscode
       when '1' then true
       when '0' then false
       else
-        # Default to false for now until we decide what kind
-        # of error handling we want
-        false
+        # Fallback to static Darklaunch
+        Opscode::DarkLaunch.is_feature_enabled? key, orgname
       end
     end
 
