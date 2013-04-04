@@ -3,7 +3,7 @@ require 'opscode/dark_launch'
 require 'json'
 
 module Opscode
-  X_DARKLAUNCH_HEADER = 'HTTP_X_OPS_DARKLAUNCH'
+  X_DARKLAUNCH_HEADER = 'HTTP_X_OPS_DARKLAUNCH'.freeze
 
   # Include this module to extract Darklaunch feature flags from
   # X-Ops-Darklaunch
