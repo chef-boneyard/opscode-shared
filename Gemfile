@@ -8,7 +8,6 @@ gem "rake"
 gem "rest-client", "~> 1.6.0"
 gem "json", '1.4.6'
 
-
 # OPSCODE PATCHED GEMS
 gem "couchrest", :git => "git://github.com/opscode/couchrest.git"
 
