@@ -26,7 +26,7 @@ module Opscode
         rescue
           Chef::Log.error("DarkLaunch: got exception parsing #{config_file_path}, returning false...")
           Chef::Log.error("#{$!}\n  " + $!.backtrace.join("\n  "))
-          
+
           # if we had an error, set the @features_by_org and
           # @features_by_org_mtime to empty and *now*,
           # respectively. This way we return false for all calls until
