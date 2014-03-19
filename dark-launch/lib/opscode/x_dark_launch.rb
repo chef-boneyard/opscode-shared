@@ -61,7 +61,7 @@ module Opscode
     end
 
     # value should be '1' or '0'
-    def x_set_darklaunch_key(key, value)
+    def x_set_darklaunch_flag(key, value)
       x_darklaunch_features[key] = value
     end
 
