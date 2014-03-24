@@ -60,6 +60,11 @@ module Opscode
       !x_darklaunch_enabled?("couchdb_#{type_container}")
     end
 
+    # value should be '1' or '0'
+    def x_set_darklaunch_flag(key, value)
+      x_darklaunch_features[key] = value
+    end
+
     # Given the kind of Chef Object we want the ACL for, and the org,
     # determine of the objects are stored in SQL or CouchDB.
     #

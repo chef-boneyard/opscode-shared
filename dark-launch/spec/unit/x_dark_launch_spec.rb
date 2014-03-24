@@ -70,4 +70,17 @@ describe Opscode::XDarkLaunch do
     when_feature_is 'nil',      { feature => nil } { should be_kind_of(Hash) }
   end
 
+  describe "#x_set_darklaunch_flag" do
+    # copy-pasta'ed from other tests
+    subject { controller.x_darklaunch_features }
+    let(:darklaunch_features) { { feature => nil } }
+
+    context "when the user changes a key" do
+      it "should mutate x_darklaunch_features" do
+        controller.x_set_darklaunch_flag("new_key", "1")
+        (controller.x_darklaunch_features["new_key"]).should eq("1")
+      end
+    end
+  end
+
 end
