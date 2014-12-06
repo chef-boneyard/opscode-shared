@@ -1,4 +1,6 @@
-opscode-shared
+## Deprecated
+
+No longer under active development.
 
 ## License
 
